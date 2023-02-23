@@ -5,6 +5,41 @@ import React from "react";
 import { Colors, IconButton } from "react-native-paper";
 import dynamicStyles from "./styles";
 
+
+
+const HeaderComponent = ({user, text, navigation}) => {
+  const styles = dynamicStyles();
+  return (
+    <View>
+      <TouchableOpacity onPress={() => navigation.navigate("AddStory")}>
+        <LinearGradient
+          colors={["#fffff", "#fffff"]}
+          style={styles.storyAvatarBG}
+        >
+          <Image
+            source={{ uri: user.profilePicUrl }}
+            style={[styles.storyAvatar, { borderColor: "white", borderWidth: 2 }]}
+          />
+        </LinearGradient>
+        <IconButton
+          style={styles.storyPlusIcon}
+          size={15}
+          color={Colors.white}
+          icon="plus"
+        />
+      </TouchableOpacity>
+      <Text
+        style={{
+          marginTop: 5,
+          textAlign: "center",
+        }}
+      >
+        {text}
+      </Text>
+    </View>
+  );
+};
+
 const Stories = (props) => {
   const { stories, user } = props;
   const styles = dynamicStyles();
@@ -36,50 +71,23 @@ const Stories = (props) => {
       </View>
     );
   };
-  const headerComponent = () => {
-    return (
-      <View>
-        <TouchableOpacity>
-          <LinearGradient
-            colors={["#fffff", "#fffff"]}
-            style={styles.storyAvatarBG}
-          >
-            <Image
-              source={{ uri: user.profilePicUrl }}
-              style={styles.storyAvatar}
-            />
-          </LinearGradient>
-          <IconButton
-            {...props}
-            style={styles.storyPlusIcon}
-            size={15}
-            color={Colors.white}
-            icon="plus"
-          />
-        </TouchableOpacity>
-        <Text
-          style={{
-            marginTop: 5,
-            textAlign: "center",
-          }}
-        >
-          Your story
-        </Text>
-      </View>
-    );
-  };
+  
   return (
     <View>
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
         data={stories}
-        ListHeaderComponent={headerComponent}
+        ListHeaderComponent={() => (
+          <HeaderComponent user={user} text="Your story" {...props} />
+        )}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
       />
     </View>
   );
 };
+
+export { HeaderComponent};
 
 export default Stories;

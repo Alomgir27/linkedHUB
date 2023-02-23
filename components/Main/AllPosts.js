@@ -4,7 +4,7 @@ import PostCard from "../reusable/PostCard";
 const AllPosts = (props) => {
   const { navigation, posts, fetchPosts, loading, user, header } = props;
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <FlatList
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}

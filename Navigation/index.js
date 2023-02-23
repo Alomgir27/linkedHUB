@@ -10,28 +10,49 @@ import Login from "../components/Auth/Login";
 import Register from "../components/Auth/Register";
 import ForgotPW from "../components/Auth/ForgotPW";
 
-import MainScreen from "../components/Main";
+import MainScreen from "../components/MainTab";
 import AddScreen from "../components/Main/Add";
 import SavePost from "../components/Main/Save";
 import UserPosts from "../components/Main/UserPosts";
 import EditProfile from "../components/Main/EditProfile";
 import OtherProfile from "../components/Main/OtherProfile";
+import ShortVideo from "../components/Main/ShortVideo";
 
 import { auth, db } from "../firebase";
 import { Text, View } from "react-native";
 import { ActivityIndicator, Colors } from "react-native-paper";
 import Signup from "../components/Auth/Register";
 
+import ChatScreen from "../components/chat/ChatList";
+import Chat from "../components/chat/Chat";
+
+import UnderConstruction from "../components/reusable/UnderConstruction";
+
 const Stack = createNativeStackNavigator();
 
 export default function NavigationStack({ navigation }) {
+
   const [loaded, setLoaded] = useState(false);
   const [login, setLogin] = useState(false);
+
+
+
+  const StoryScreen = ({ navigation }) => {
+    return (
+      <UnderConstruction
+        screenName="Upload Story"
+        navigation={navigation}
+        showHeader={true}
+        backgroundColor="#fffafb"
+      />
+    );
+  };
+  
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
       if (!user) {
         setLogin(false);
-        console.log(user + " !user");
+        console.log("user: ", user);
         setLoaded(true);
       } else {
         setLoaded(true);
@@ -41,7 +62,6 @@ export default function NavigationStack({ navigation }) {
   }, []);
 
   if (!loaded) {
-    console.log("load: ", loaded);
     return (
       <View
         style={{
@@ -98,14 +118,20 @@ export default function NavigationStack({ navigation }) {
   }
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator
+       initialRouteName="main"
+      >
         <Stack.Screen
           name="main"
           component={MainScreen}
           options={{
             headerShown: false,
-            headerTitle: "",
+            headerTitle: "linkedHub",
+            title: "linkedHub",
+
           }}
+          navigation={navigation}
+
         />
         <Stack.Screen
           name="Add"
@@ -140,6 +166,43 @@ export default function NavigationStack({ navigation }) {
           component={OtherProfile}
           navigation={navigation}
         />
+        <Stack.Screen
+          name="Chat"
+          component={Chat}
+          navigation={navigation}
+          options={{
+            headerShown: false,
+            headerTitle: "Chat",
+          }
+        }
+        />
+        <Stack.Screen name="ChatScreen" 
+          component={ChatScreen} 
+          navigation={navigation}
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="StoryScreen"
+          component={StoryScreen}
+          navigation={navigation}
+          options={{
+            headerShown: false,
+            headerTitle: "Upload Story",
+          }}
+        />
+        <Stack.Screen
+          name="ShortVideo"
+          component={ShortVideo}
+          navigation={navigation}
+          options={{
+            headerShown: false,
+            headerTitle: "Short Video",
+          }}
+        />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

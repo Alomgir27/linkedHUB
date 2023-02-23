@@ -18,6 +18,9 @@ import {
 import { SearchBar } from "react-native-elements";
 import styles from "./styles";
 import { db, fs, auth } from "../../firebase";
+
+
+
 const Search = (props) => {
   const [user, setUser] = useState([]);
   const [userName, setUserName] = useState("");
@@ -26,13 +29,14 @@ const Search = (props) => {
       ? setUser([])
       : await db
           .collection("users")
-          .where("name", "==", search)
+          .where("name", ">=", search.toUpperCase())
+          .where("name", "<=", search.toLowerCase() + "\uf8ff")
+          .limit(5)
           .get()
           .then((snapshot) => {
             let users = [];
             snapshot.forEach((doc) => {
               const data = doc.data();
-              //console.log(data.downloadURL);
               const id = doc.id;
               users.push({ id, ...data });
             });
@@ -52,7 +56,6 @@ const Search = (props) => {
             round={true}
             containerStyle={styles.searchBarStyle}
             inputContainerStyle={styles.searchBarInput}
-            //loadingProps={<ActivityIndicator />}
             inputStyle={{ color: "black" }}
             placeholder="Type Here..."
             onChangeText={(text) => {

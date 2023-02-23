@@ -1,7 +1,7 @@
 import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
-import { firebaseConfig } from "./components/Main/firebaseConfig";
+import { firebaseConfig } from "./components/Auth/firebaseConfig";
 
 let app;
 

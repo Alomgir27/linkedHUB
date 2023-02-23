@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { View, Text, Image, ImageBackground } from "react-native";
 import { Appbar, Colors } from "react-native-paper";
 import { Ionicons, Feather } from "@expo/vector-icons";
@@ -6,10 +6,23 @@ import AllPosts from "./AllPosts";
 import { fetchAllPosts, fetchUser } from "../../components/UserFunctions";
 import Stories from "../reusable/Stories";
 
+
 const HomeScreen = ({ navigation }) => {
+
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState({});
+
+
+  
+   
+
+    
+   
+    
+
+
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -84,7 +97,7 @@ const HomeScreen = ({ navigation }) => {
     },
   ];
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.grey200 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.grey200 }} >
       <Appbar.Header
         style={{
           backgroundColor: "#fff0",

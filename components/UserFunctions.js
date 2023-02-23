@@ -13,9 +13,13 @@ export const fetchUser = (userId, callback) => {
       }
     });
 };
+
+
 export const deletePost = (postId) => {
   db.collection("posts").doc(postId).delete();
 };
+
+
 export const fetchUserById = (userId, callback) => {
   db.collection("users")
     .doc(userId)
@@ -39,6 +43,8 @@ export const savePost = (postID) => {
       console.log("error", error);
     });
 };
+
+
 export const removeSavedPost = (postID) => {
   const id = auth.currentUser.uid;
   db.collection("users")
@@ -54,6 +60,8 @@ export const setUserData = async (userId, data) => {
   console.log("setUserData", userId, data);
   db.collection("users").doc(userId).update(data);
 };
+
+
 export const fetchUserPosts = async (userId, callback) => {
   console.log("fetching posts", userId);
   if (userId) {
@@ -78,6 +86,9 @@ export const fetchUserPosts = async (userId, callback) => {
       });
   }
 };
+
+
+
 export const fetchUserSavedPosts = async (posts, callback) => {
   if (posts) {
     var Posts = [];
@@ -103,6 +114,8 @@ export const fetchUserSavedPosts = async (posts, callback) => {
     });
   }
 };
+
+
 export const likePost = (postID) => {
   const id = auth.currentUser.uid;
   db.collection("posts")
@@ -114,6 +127,8 @@ export const likePost = (postID) => {
       console.log("error", error);
     });
 };
+
+
 export const unlikePost = (postID) => {
   const id = auth.currentUser.uid;
   db.collection("posts")
@@ -125,6 +140,8 @@ export const unlikePost = (postID) => {
       console.log("error", error);
     });
 };
+
+
 export const fetchAllPosts = async (callback) => {
   var Posts = [];
   await db
