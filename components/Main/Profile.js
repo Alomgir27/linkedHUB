@@ -88,7 +88,8 @@ const Profile = ({ navigation }, props) => {
           auth
             .signOut()
             .then(() => {
-              console.log("success");
+              console.log("user signed out!");
+
             })
             .catch((err) => {
               console.log(err);
@@ -131,7 +132,6 @@ const Profile = ({ navigation }, props) => {
     );
   };
   const renderSavedItem = ({ item, index }) => {
-    console.log("saved item is: ", item);
     return (
       <TouchableOpacity
         onPress={() => {

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { Alert } from "react-native";
 
 //navigation
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 //Screens
-import Landing from "../components/Auth/Landing";
 import Login from "../components/Auth/Login";
 import Register from "../components/Auth/Register";
 import ForgotPW from "../components/Auth/ForgotPW";
@@ -27,6 +27,20 @@ import ChatScreen from "../components/chat/ChatList";
 import Chat from "../components/chat/Chat";
 
 import UnderConstruction from "../components/reusable/UnderConstruction";
+import UserStoriesScreen from "../components/reusable/UserStoriesScreen";
+import FullScreenStory from "../components/reusable/FullScreenStory";
+
+
+import StoryFileUploader from "../components/Upload/StoryFileUploader";
+
+import { getUserByUUID } from "../components/redux/actions";
+
+import { useDispatch } from "react-redux";
+import * as Location from 'expo-location';
+import * as Permissions from 'expo-permissions';
+
+
+
 
 const Stack = createNativeStackNavigator();
 
@@ -35,7 +49,75 @@ export default function NavigationStack({ navigation }) {
   const [loaded, setLoaded] = useState(false);
   const [login, setLogin] = useState(false);
 
+  const dispatch = useDispatch();
 
+
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+     
+    })();
+  }, []);
+
+
+
+
+  
+  
+  useEffect(() => {
+    (async () => {
+      auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+          setLogin(false);
+          console.log("user: ", user);
+          setLoaded(true);
+        } 
+        else if(!user.emailVerified){
+         user.sendEmailVerification();
+         Alert.alert(
+          "Email Verification",
+          "You need to verify your email before login. Please check your email.",
+          [
+            {
+              text: "Send Again",
+              onPress: () => {
+                user.sendEmailVerification();
+                setLogin(false);
+                setLoaded(true);
+              }
+            },
+            {
+              text: "OK",
+              onPress: () => {
+                auth.signOut();
+                setLogin(false);
+                setLoaded(true);
+              }
+            },
+          ],
+          { cancelable: true }
+           
+        );
+        }
+        else {
+          let location = await Location.getCurrentPositionAsync({});
+          let coordinates = {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          };
+          dispatch(getUserByUUID(user.uid, coordinates));
+          setLoaded(true);
+          setLogin(true);
+          
+        }
+      });
+    })();
+  }, []);
 
   const StoryScreen = ({ navigation }) => {
     return (
@@ -47,19 +129,6 @@ export default function NavigationStack({ navigation }) {
       />
     );
   };
-  
-  useEffect(() => {
-    auth.onAuthStateChanged((user) => {
-      if (!user) {
-        setLogin(false);
-        console.log("user: ", user);
-        setLoaded(true);
-      } else {
-        setLoaded(true);
-        setLogin(true);
-      }
-    });
-  }, []);
 
   if (!loaded) {
     return (
@@ -81,13 +150,6 @@ export default function NavigationStack({ navigation }) {
     return (
       <NavigationContainer>
         <Stack.Navigator>
-          <Stack.Screen
-            name="Landing"
-            component={Landing}
-            options={{
-              headerShown: false,
-            }}
-          />
           <Stack.Screen
             options={{ headerLargeTitle: true }}
             name="Login"
@@ -119,10 +181,10 @@ export default function NavigationStack({ navigation }) {
   return (
     <NavigationContainer>
       <Stack.Navigator
-       initialRouteName="main"
+       initialRouteName="Main"
       >
         <Stack.Screen
-          name="main"
+          name="Main"
           component={MainScreen}
           options={{
             headerShown: false,
@@ -190,7 +252,6 @@ export default function NavigationStack({ navigation }) {
           navigation={navigation}
           options={{
             headerShown: false,
-            headerTitle: "Upload Story",
           }}
         />
         <Stack.Screen
@@ -199,9 +260,33 @@ export default function NavigationStack({ navigation }) {
           navigation={navigation}
           options={{
             headerShown: false,
-            headerTitle: "Short Video",
           }}
         />
+        <Stack.Screen
+          name="StoryFileUploader"
+          component={StoryFileUploader}
+          navigation={navigation}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="StoryViewer"
+          component={UserStoriesScreen}
+          navigation={navigation}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="FullScreenStory"
+          component={FullScreenStory}
+          navigation={navigation}
+          options={{
+            headerShown: false,
+          }}
+        />
+
 
       </Stack.Navigator>
     </NavigationContainer>

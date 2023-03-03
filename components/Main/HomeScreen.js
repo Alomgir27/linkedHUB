@@ -6,32 +6,25 @@ import AllPosts from "./AllPosts";
 import { fetchAllPosts, fetchUser } from "../../components/UserFunctions";
 import Stories from "../reusable/Stories";
 
+import { useSelector } from "react-redux";
+
 
 const HomeScreen = ({ navigation }) => {
 
 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState({});
+  const user = useSelector((state) => state?.data?.currentUser);
 
 
   
-   
-
-    
-   
-    
-
+  
 
   useEffect(() => {
     fetchPosts();
   }, []);
-  useEffect(() => {
-    fetchUser("", (user) => {
-      console.log("user: ", user);
-      setUser(user);
-    });
-  }, []);
+
+
   const fetchPosts = async () => {
     setLoading(true);
     await fetchAllPosts((posts) => {
@@ -40,62 +33,7 @@ const HomeScreen = ({ navigation }) => {
     });
   };
 
-  const stories = [
-    {
-      id: "1",
-      name: "John",
-      image: "https://i.pravatar.cc/150?img=5",
-      seen: false,
-    },
-    {
-      id: "2",
-      name: "Vicky",
-      image: "https://i.pravatar.cc/150?img=3",
-      seen: false,
-    },
-    {
-      id: "3",
-      name: "Rich",
-      image: "https://i.pravatar.cc/150?img=2",
-      seen: false,
-    },
-    {
-      id: "4",
-      name: "Bret",
-      image: "https://i.pravatar.cc/150?img=6",
-      seen: false,
-    },
-    {
-      id: "5",
-      name: "Clementine",
-      image: "https://i.pravatar.cc/150?img=19",
-      seen: false,
-    },
-    {
-      id: "6",
-      name: "Vicky",
-      image: "https://i.pravatar.cc/150?img=13",
-      seen: false,
-    },
-    {
-      id: "7",
-      name: "Patricia",
-      image: "https://i.pravatar.cc/150?img=12",
-      seen: false,
-    },
-    {
-      id: "8",
-      name: "Kamren",
-      image: "https://i.pravatar.cc/150?img=16",
-      seen: false,
-    },
-    {
-      id: "9",
-      name: "kale",
-      image: "https://i.pravatar.cc/150?img=19",
-      seen: false,
-    },
-  ];
+ 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.grey200 }} >
       <Appbar.Header
@@ -133,7 +71,7 @@ const HomeScreen = ({ navigation }) => {
       <AllPosts
         header={
           <View>
-            <Stories navigation={navigation} stories={stories} user={user} />
+            <Stories navigation={navigation} />
           </View>
         }
         navigation={navigation}

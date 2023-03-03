@@ -1,23 +1,23 @@
-import { View, TouchableOpacity, Image, Text, FlatList } from "react-native";
+import { View, TouchableOpacity, Image, Text, FlatList, Alert } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
-import React from "react";
+import React , { useEffect , useState} from "react";
 import { Colors, IconButton } from "react-native-paper";
 import dynamicStyles from "./styles";
-
+import { useSelector } from "react-redux";
 
 
 const HeaderComponent = ({user, text, navigation}) => {
   const styles = dynamicStyles();
   return (
     <View>
-      <TouchableOpacity onPress={() => navigation.navigate("AddStory")}>
+      <TouchableOpacity onPress={() => navigation.navigate("StoryFileUploader")}>
         <LinearGradient
-          colors={["#fffff", "#fffff"]}
+          colors={[Colors.blue500, Colors.blue700]}
           style={styles.storyAvatarBG}
         >
           <Image
-            source={{ uri: user.profilePicUrl }}
+            source={{ uri: user?.profilePic }}
             style={[styles.storyAvatar, { borderColor: "white", borderWidth: 2 }]}
           />
         </LinearGradient>
@@ -34,21 +34,24 @@ const HeaderComponent = ({user, text, navigation}) => {
           textAlign: "center",
         }}
       >
-        {text}
+        { text }
       </Text>
     </View>
   );
 };
 
 const Stories = (props) => {
-  const { stories, user } = props;
   const styles = dynamicStyles();
+  const user = useSelector(state => state?.data?.currentUser);
+  const stories = useSelector(state => state?.data?.usersStory);
+  const storiesByUUID = useSelector(state => state?.data?.usersStoryByUUID);
+  
   const renderItem = ({ item }) => {
     return (
       <View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => props.navigation.navigate("StoryViewer", { stories: storiesByUUID[item.uuid] })}>
           <LinearGradient
-            colors={["#DE0046", "#F7A34B"]}
+            colors={storiesByUUID[item.uuid]?.seen ? [Colors.grey500, Colors.grey500] : [Colors.blue500, Colors.blue700]}
             style={styles.storyAvatarBG}
           >
             <Image
@@ -77,17 +80,16 @@ const Stories = (props) => {
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
-        data={stories}
+        data={stories || []}
         ListHeaderComponent={() => (
           <HeaderComponent user={user} text="Your story" {...props} />
         )}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        renderItem={(item) => renderItem(item, props)}
+        keyExtractor={(item) => item._id}
       />
     </View>
   );
 };
 
-export { HeaderComponent};
 
 export default Stories;

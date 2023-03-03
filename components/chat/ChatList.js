@@ -33,10 +33,14 @@ import { Tile } from 'react-native-elements';
 import { SocialIcon } from 'react-native-elements';
 import { Divider } from 'react-native-elements';
 import { Text as TextElement } from 'react-native-elements';
+import { useSelector } from 'react-redux';
 
 import { AntDesign } from '@expo/vector-icons';
 
-import { HeaderComponent } from '../reusable/Stories';
+import axios from 'axios';
+
+import { baseURL } from '../config/baseURL';
+
 
 function ChatList({ navigation }) {
   const [connectedUsers, setConnectedUsers] = useState([]);
@@ -70,15 +74,13 @@ function ChatList({ navigation }) {
     }
   ])
   const [backgroundColor, setBackgroundColor] = useState("#fff")
-  const [textColor, setTextColor] = useState("#000")
 
-  useEffect(() => {
-    // firebase.database().ref('users').on('value', (snapshot) => {
-    //   const data = snapshot.val();
-    //   const connectedUsers = Object.values(data);
-    //   setConnectedUsers(connectedUsers);
-    // });
-  }, []);
+
+  
+
+    
+
+  
 
   const handleSearch = (text) => {
     const formattedQuery = text.toLowerCase();
@@ -111,67 +113,6 @@ function ChatList({ navigation }) {
   };
 
   
-  const user = {
-    name: 'Vicky',
-    profilePicUrl: 'https://i.pravatar.cc/150?img=3',
-  };
-
-  const stories = [
-    {
-      id: "1",
-      name: "John",
-      image: "https://i.pravatar.cc/150?img=5",
-      seen: false,
-    },
-    {
-      id: "2",
-      name: "Vicky",
-      image: "https://i.pravatar.cc/150?img=3",
-      seen: false,
-    },
-    {
-      id: "3",
-      name: "Rich",
-      image: "https://i.pravatar.cc/150?img=2",
-      seen: false,
-    },
-    {
-      id: "4",
-      name: "Bret",
-      image: "https://i.pravatar.cc/150?img=6",
-      seen: false,
-    },
-    {
-      id: "5",
-      name: "Clementine",
-      image: "https://i.pravatar.cc/150?img=19",
-      seen: false,
-    },
-    {
-      id: "6",
-      name: "Vicky",
-      image: "https://i.pravatar.cc/150?img=13",
-      seen: false,
-    },
-    {
-      id: "7",
-      name: "Patricia",
-      image: "https://i.pravatar.cc/150?img=12",
-      seen: false,
-    },
-    {
-      id: "8",
-      name: "Kamren",
-      image: "https://i.pravatar.cc/150?img=16",
-      seen: false,
-    },
-    {
-      id: "9",
-      name: "kale",
-      image: "https://i.pravatar.cc/150?img=19",
-      seen: false,
-    },
-  ];
 
 
 
@@ -200,7 +141,7 @@ function ChatList({ navigation }) {
       </View>
 
       <View style={{flexDirection: 'row', alignItems: 'center', padding: 10, borderBottomWidth: 1, borderBottomColor: '#ccc'}}>
-        <Stories stories={stories} navigation={navigation} user={user} />
+        <Stories navigation={navigation}  />
       </View>
 
       

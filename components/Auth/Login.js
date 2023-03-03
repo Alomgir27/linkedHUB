@@ -1,10 +1,15 @@
 import React from "react";
-import { KeyboardAvoidingView, View } from "react-native";
+import { KeyboardAvoidingView, View, Alert } from "react-native";
 import { Button, Text, TextInput, Banner, Colors } from "react-native-paper";
 import { auth } from "../../firebase";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import styles from "./styles";
+
+import { baseURL } from "../config/baseURL";
+import axios from "axios";
+
 export default function Login({ navigation }) {
+
   const [label, setLabel] = React.useState("");
   const [visible, setVisible] = React.useState(false);
 
@@ -12,9 +17,9 @@ export default function Login({ navigation }) {
   const [Email, setEmail] = React.useState("");
   const [Password, setPassword] = React.useState("");
   const [color, setColor] = React.useState("#9d9d9d");
+
   const onSignin = () => {
-    auth
-      .signInWithEmailAndPassword(Email, Password)
+    auth.signInWithEmailAndPassword(Email, Password)
       .then((result) => {
         console.log(result);
       })

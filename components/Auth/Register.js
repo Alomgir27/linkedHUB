@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -18,43 +18,51 @@ import {
 import { auth, db } from "../../firebase";
 import styles from "./styles";
 
+import { baseURL } from "../config/baseURL";
+import axios from "axios";
+
+
+
 export default function Signup({ navigation }) {
-  const [Name, setName] = React.useState("");
-  const [securedpassword, setSecuredpassword] = React.useState(true);
-  const [Email, setEmail] = React.useState("");
-  const [Password, setPassword] = React.useState("");
-  const [color, setColor] = React.useState("#9d9d9d");
+
+
+  const [Name, setName] = useState("");
+  const [securedpassword, setSecuredpassword] = useState(true);
+  const [Email, setEmail] = useState("");
+  const [Password, setPassword] = useState("");
+  const [color, setColor] = useState("#9d9d9d");
 
   //SnackBar manage
-  const [label, setLabel] = React.useState("");
-  const [visible, setVisible] = React.useState(false);
+  const [label, setLabel] = useState("");
+  const [visible, setVisible] = useState(false);
+
+  
+  
 
   const onSignUp = () => {
     if (Name == "" || Email == "" || Password == "") {
       setLabel("Please fill all the fields");
       setVisible(true);
     } else {
-      console.log("signup");
-      auth
-        .createUserWithEmailAndPassword(Email, Password)
-        .then((result) => {
-          auth.currentUser.sendEmailVerification();
-          console.log("New user is: ", auth.currentUser.uid);
-          db.collection("users")
-            .doc(auth.currentUser.uid)
-            .set({
-              name: Name,
-              email: Email,
-              id: auth.currentUser.uid,
-              profilePicUrl: null,
-              userName: "",
-            })
-            .then(() => {
-              console.log("Document successfully written!");
+      auth.createUserWithEmailAndPassword(Email, Password)
+        .then(async (result) => {
+          await axios.post(`${baseURL}/api/users/register`, {
+            name: Name,
+            email: Email,
+            password: Password,
+            profilePic: "https://firebasestorage.googleapis.com/v0/b/linkedhub-9b776.appspot.com/o/istockphoto-1316420668-612x612.jpg?alt=media&token=e3e329a7-f40a-4d0e-b3e8-bc7570d31d52",
+            uuid: result.user.uid,
+          })
+            .then((res) => {
+              console.log(res);
+              navigation.navigate("Login");
             })
             .catch((error) => {
-              console.log("Error writing document: ", error);
+              console.error(error);
+              setLabel(error.message);
+              setVisible(true);
             });
+         
         })
         .catch((error) => {
           console.log(error);
@@ -87,11 +95,11 @@ export default function Signup({ navigation }) {
         <TextInput
           label="Email"
           value={Email}
-          onChangeText={(text) => setEmail(text)}
+          onChangeText={(email) => setEmail(email)}
           type="email"
-          keyboardType="email-address"
           style={styles.input}
           mode="outlined"
+          keyboardType="email-address"
         />
 
         <TextInput

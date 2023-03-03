@@ -66,11 +66,11 @@ const Main = ({ navigation }) => {
           } else if (route.name === "Notification") {
             iconName = focused ? "heart-sharp" : "heart-outline";
             size = focused ? 32 : 30;
-            color = "#f7b801";
+            color = "#a2d2ff";
           } else if (route.name === "ShortVideo") {
             iconName = focused ? "videocam" : "videocam-outline";
             size = focused ? 30 : 28;
-            color = "#f7b801";
+            color = "#a2d2ff";
           }
           return (
             route.name === "ShortVideo" ? (
