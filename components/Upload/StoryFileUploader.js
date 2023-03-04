@@ -13,12 +13,17 @@ import { useDispatch } from 'react-redux';
 
 import { modifyStoryState } from '../redux/actions';
 
+import Loader from '../reusable/Loader';
+
+
+
 export default function StoryFileUploader({ navigation }) {
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
 
   const user = useSelector((state) => state?.data?.currentUser);
   const usersStory = useSelector((state) => state?.data?.usersStory);
+  const storiesByUUID = useSelector((state) => state?.data?.usersStoryByUUID);
 
   const dispatch = useDispatch();
 
@@ -58,16 +63,16 @@ export default function StoryFileUploader({ navigation }) {
           const { story } = res.data;
           let newStories = []
           newStories.push(story)
-          dispatch(modifyStoryState(usersStory, newStories, user));
-          Alert.alert('Success', 'Story uploaded successfully',
-            [
-              {
-                text: 'OK',
-                onPress: () => navigation.goBack(),
-              },
-            ],
-            { cancelable: false }
-          );
+          let oldStories = []
+          for (let key in storiesByUUID) {
+            storiesByUUID[key].forEach(story => {
+              oldStories.push(story)
+            })
+          }
+          dispatch(modifyStoryState(oldStories, newStories, user));
+          setUploading(false);
+          navigation.goBack();
+          
         })
           .catch((error) => {
             setUploading(false);
@@ -86,11 +91,7 @@ export default function StoryFileUploader({ navigation }) {
     });
   };
 
-  if(uploading) return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000', }}>
-      <Text style={{ color: '#fff', fontSize: 20, }}>Uploading...</Text>
-    </View>
-  );
+  if(uploading) return <Loader />
 
   return (
     <View style={styles.container}>

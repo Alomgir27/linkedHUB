@@ -29,7 +29,6 @@ import {
     CLEAR_DATA
 } from '../constant/index'
 
-import { useSelector } from 'react-redux';
 
 export function clearData() {
     return ((dispatch) => dispatch({ type: CLEAR_DATA }))
@@ -108,9 +107,9 @@ export function getUserByUUID(uuid, location) {
                     dispatch({ type: USER_STATE_CHANGE, currentUser: res.data.user })
                     let uuids = res.data.user.following.concat(res.data.user.uuid)
                     uuids = uuids.concat(res.data.user.friends)
-                    uuids = uuids.concat(res.data.user.followers)
                     dispatch(fetchUsers(uuids, location))
-                    dispatch(fetchUsersStory(uuids, res.data.user))
+                    dispatch(fetchUsersStory(res?.data?.user))
+                    console.log('refreshed')
                 }
             })
             .catch((err) => console.log(err))
@@ -167,21 +166,34 @@ export function fetchUsersMore(uuids, location, lastUser) {
     })
 }
 
-export function fetchUsersStory(uuids, user) {
+export function fetchUsersStory(user) {
+    let uuids = user?.following.concat(user?.uuid)
+    uuids = uuids.concat(user?.friends)
     return (async (dispatch) => {
             await axios.post(`${baseURL}/api/stories/getStories`, { uuids }).then((res) => {
               if(res?.data?.success) {
-                dispatch(modifyStoryState([], res.data.stories, user))
+                let stories = res.data.stories;
+                if(stories.length > 0) {
+                    stories[stories.length - 1].lastStory = true;
+                }
+                dispatch(modifyStoryState([], stories, user))
               }
             });
     })
 }
 
-export function fetchUsersStoryMore(uuids, user, lastStory, oldStories) {
+export function fetchUsersStoryMore(user, lastStory, oldStories) {
+    let uuids = user?.following.concat(user?.uuid)
+    uuids = uuids.concat(user?.friends)
     return (async (dispatch) => {
             await axios.post(`${baseURL}/api/stories/getStoriesMore`, { uuids, lastStory }).then((res) => {
               if(res?.data?.success) {
-                dispatch(modifyStoryState(oldStories, res.data.stories, user))
+                let stories = res.data.stories;
+                if(stories.length > 0) {
+                    stories[stories.length - 1].lastStory = true;
+                }
+                dispatch(modifyStoryState(oldStories, stories, user))
+                console.log(oldStories, 'oldStories')
               }
             });
     })

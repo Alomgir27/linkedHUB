@@ -23,20 +23,30 @@ import {
 } from "react-native-paper";
 import { Text } from "react-native-elements";
 import styles from "./styles";
-import { setUserData } from "../../components/UserFunctions";
 import * as ImagePicker from "expo-image-picker";
+import { baseURL } from "../config/baseURL";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { getUserByUUID } from "../redux/actions";
+
+import * as Location from "expo-location";
+
+
+
 import firebase from "firebase/app";
 require("firebase/firebase-storage");
+
+
+
 const EditProfile = (props) => {
   const { user } = props.route.params;
-  const { navigation } = props;
   const [name, setName] = useState(user?.name);
   const [email, setEmail] = useState(user?.email);
   const [bio, setBio] = useState(user?.bio);
-  const [image, setImage] = useState(user?.profilePicUrl);
-  const [imageUrl, setImageUrl] = useState(null);
+  const [image, setImage] = useState(user?.profilePic);
   const [userName, setUserName] = useState(user?.userName);
   const [hasGalleryPermission, setHasGalleryPermission] = useState(null);
+  const dispatch = useDispatch();
 
   const updateProfile = () => {
     if (name == "") {
@@ -51,11 +61,25 @@ const EditProfile = (props) => {
         email: email,
         bio: bio ? (bio.length > 0 ? bio : null) : null,
         userName: userName ? (userName.length > 0 ? userName : null) : null,
-        profilePicUrl: image ? image : null,
+        profilePic: image ? image : null,
+        uuid: user?.uuid,
       };
-      setUserData(user.id, userData);
+      (async () => {
+        await axios.post(`${baseURL}/api/users/updateUser`, userData)
+        .then(async (res) => {
+            let location = await Location.getCurrentPositionAsync({});
+            let coordinates = {
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+            };
+            dispatch(getUserByUUID(user.uuid, coordinates));
+            props.navigation.goBack();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      })();
 
-      navigation.goBack();
     }
   };
 
@@ -161,6 +185,7 @@ const EditProfile = (props) => {
           keyboardType="email-address"
           style={styles.input}
           mode="outlined"
+          disabled={true}
         />
         <TextInput
           label="Bio"

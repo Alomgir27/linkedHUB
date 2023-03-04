@@ -31,6 +31,7 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { useFocusEffect } from "@react-navigation/native";
+import { useSelector } from "react-redux";
 
 import styles from "./styles";
 
@@ -40,13 +41,16 @@ const Profile = ({ navigation }, props) => {
   const width = useWindowDimensions().width;
   const [post, setpost] = useState([]);
   const [savedPost, setSavedPost] = useState([]);
-  const [user, setUser] = useState([]);
+  
+  const user = useSelector((state) => state?.data?.currentUser);
+
+
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchUser("", (user) => {
       console.log("user: ", user);
-      setUser(user);
+      // setUser(user);
       fetchPosts(user.id);
       fetchSavedPosts(user?.savedPost);
     });
@@ -226,8 +230,8 @@ const Profile = ({ navigation }, props) => {
             style={{ elevation: 10 }}
             size={100}
             source={
-              user?.profilePicUrl
-                ? { uri: user?.profilePicUrl }
+              user?.profilePic
+                ? { uri: user?.profilePic }
                 : require("../../assets/defaultProfilePic.png")
             }
           />

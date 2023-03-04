@@ -42,6 +42,7 @@ const StoryViewer = ({route,  navigation }) => {
   const [isLove, setIsLove] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const bottomSheetModalRef = useRef(null);
+  const [lastTap, setLastTap] = useState(null);
 
 
   const [users, setUsers] = useState([]);
@@ -182,9 +183,19 @@ const StoryViewer = ({route,  navigation }) => {
 
   const handleStoryPress = () => {
     if(!stories) return;
-    // Open the current story in full-screen mode
-    const currentStory = stories[currentStoryIndex];
-    navigation.navigate('FullScreenStory', { story: currentStory }); 
+
+    const now = Date.now();
+    const DOUBLE_PRESS_DELAY = 300;
+    if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
+      handleLove();
+      setLastTap(null);
+    } else {
+      setLastTap(now);
+      setTimeout(() => {
+        setLastTap(null);
+      }, DOUBLE_PRESS_DELAY);
+    }
+
   };
 
 
@@ -234,14 +245,6 @@ const StoryViewer = ({route,  navigation }) => {
       return `${(length / 1000000000000).toFixed(1)}T`
     }
   }
-
-
-
-
-
-       
-
-
 
   return (
     <BottomSheetModalProvider>

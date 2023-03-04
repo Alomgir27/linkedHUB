@@ -6,6 +6,12 @@ import { Colors, IconButton } from "react-native-paper";
 import dynamicStyles from "./styles";
 import { useSelector } from "react-redux";
 
+import {
+  fetchUsersStoryMore
+} from "../redux/actions";
+
+import { useDispatch } from "react-redux";
+
 
 const HeaderComponent = ({user, text, navigation}) => {
   const styles = dynamicStyles();
@@ -42,11 +48,11 @@ const HeaderComponent = ({user, text, navigation}) => {
 
 const Stories = (props) => {
   const styles = dynamicStyles();
+  const dispatch = useDispatch();
   const user = useSelector(state => state?.data?.currentUser);
   const stories = useSelector(state => state?.data?.usersStory);
   const storiesByUUID = useSelector(state => state?.data?.usersStoryByUUID);
 
-  useSelector(state => console.log("storiesByUUID", state?.data));
 
   if (!stories || stories.length === 0 || !storiesByUUID || Object.keys(storiesByUUID).length === 0) {
     return null;
@@ -93,6 +99,24 @@ const Stories = (props) => {
         )}
         renderItem={(item) => renderItem(item, props)}
         keyExtractor={(item) => item._id}
+        onEndReached={() => {
+          if (stories.length > 0) {
+            let lastStory
+            let oldStories = []
+            for(let key in storiesByUUID){
+              storiesByUUID[key].forEach((story) => {
+                if(story?.lastStory){
+                  lastStory = story
+                  story.lastStory = false
+                }
+                oldStories.push(story)
+              })
+            }
+            dispatch(fetchUsersStoryMore(user, lastStory, oldStories));
+          }
+        }}
+        onEndReachedThreshold={0.5}
+
       />
     </View>
   );

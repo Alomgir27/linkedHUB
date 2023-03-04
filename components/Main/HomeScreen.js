@@ -7,6 +7,12 @@ import { fetchAllPosts, fetchUser } from "../../components/UserFunctions";
 import Stories from "../reusable/Stories";
 
 import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { getUserByUUID } from "../redux/actions";
+import * as Location from "expo-location";
+import { Alert } from "react-native";
+
+
 
 
 const HomeScreen = ({ navigation }) => {
@@ -15,10 +21,8 @@ const HomeScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const user = useSelector((state) => state?.data?.currentUser);
-  
+  const dispatch = useDispatch();
 
-
-  
   
 
   useEffect(() => {
@@ -32,6 +36,15 @@ const HomeScreen = ({ navigation }) => {
       setPosts(posts);
       setLoading(false);
     });
+    // Alert.alert("Location", "Please allow location access to see posts near you");
+    (async () => {
+      let location = await Location.getCurrentPositionAsync({});
+      let coordinates = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+      dispatch(getUserByUUID(user.uuid, coordinates));
+    })();
   };
 
  

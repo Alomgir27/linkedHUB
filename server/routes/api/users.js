@@ -205,6 +205,58 @@ router.post('/getUsersMore', (req, res) => {
 });
 
 
+// @route    POST api/users/updateUser
+// @desc     Update user
+// @access   Public
+
+
+router.post('/updateUser', (req, res) => {
+    const { name, email, bio, profilePic, userName, uuid } = req.body;
+    console.log(req.body);
+
+
+    User.findOne({ uuid })
+        .then(user => {
+            if (!user) return res.status(400).json({ msg: 'User does not exists', success: false });
+
+            user.name = name;
+            user.email = email;
+            user.bio = bio;
+            user.profilePic = profilePic;
+            user.userName = userName;
+
+            user.save()
+                .then(user => {
+                    Story.find({ uuid })
+                        .then(stories => {
+                            stories.forEach(story => {
+                                story.name = name;
+                                story.profilePic = profilePic;
+                                story.userName = userName;
+                                story.save();
+                            });
+                        })
+                        .catch(err => {
+                            console.log(err);
+                            res.status(400).json({ msg: 'Error saving user', success: false });
+                        });
+                        //Here we will update other collections like comments, likes, etc
+
+
+
+                      res.status(200).json({ user , success: true });
+                })
+                .catch(err => {
+                    console.log(err);
+                    res.status(400).json({ msg: 'Error saving user', success: false });
+                });
+        });
+});
+
+
+
+    
+
 
 
 
