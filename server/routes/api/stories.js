@@ -29,7 +29,8 @@ router.post('/addStory', (req, res) => {
                 image: imageURL,
                 name: name,
                 userName: userName,
-                profilePic: profilePic
+                profilePic: profilePic,
+                likedBy: []
             });
 
             newStory.save()
@@ -129,6 +130,82 @@ router.post('/viewed', (req, res) => {
             return res.status(500).json({ msg: 'Internal server error', success: false });
         });
 });
+
+
+
+// @route   update api/stories/liked
+// @desc    update story liked given story id and uuid
+// @access  Public
+
+router.post('/liked', (req, res) => {
+    const { uuid, storyId } = req.body;
+    console.log(req.body);
+
+    if (!uuid || !storyId) {
+        return res.status(400).json({ msg: 'Please enter all fields', success: false });
+    }
+
+    Story.findOne({ _id: storyId })
+        .then(story => {
+            if (!story) {
+                return res.status(400).json({ msg: 'Story does not exist', success: false });
+            }
+            if (story.likedBy.includes(uuid)) {
+                return res.status(200).json({ msg: 'Story already liked', success: false });
+            }
+            story.likedBy.push(uuid);
+            story.save()
+                .then(story => {
+                    return res.status(200).json({ story, success: true });
+                }).catch(err => {
+                    console.error(err);
+                    return res.status(500).json({ msg: 'Internal server error', success: false });
+                });
+        }).catch(err => {
+            console.error(err);
+            return res.status(500).json({ msg: 'Internal server error', success: false });
+        });
+});
+
+
+// @route   update api/stories/unliked
+// @desc    update story unliked given story id and uuid
+// @access  Public
+
+router.post('/unliked', (req, res) => {
+    const { uuid, storyId } = req.body;
+    console.log(req.body);
+
+    if (!uuid || !storyId) {
+        return res.status(400).json({ msg: 'Please enter all fields', success: false });
+    }
+
+    Story.findOne({ _id: storyId })
+        .then(story => {
+            if (!story) {
+                return res.status(400).json({ msg: 'Story does not exist', success: false });
+            }
+            if (!story.likedBy.includes(uuid)) {
+                return res.status(200).json({ msg: 'Story already unliked', success: false });
+            }
+            story.likedBy = story.likedBy.filter(id => id !== uuid);
+            story.save()
+                .then(story => {
+                    return res.status(200).json({ story, success: true });
+                }).catch(err => {
+                    console.error(err);
+                    return res.status(500).json({ msg: 'Internal server error', success: false });
+                });
+        }).catch(err => {
+            console.error(err);
+            return res.status(500).json({ msg: 'Internal server error', success: false });
+        });
+});
+
+
+
+
+
 
 
 module.exports = router;

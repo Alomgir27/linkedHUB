@@ -92,6 +92,25 @@ router.post('/getUserByUUID', (req, res) => {
         });
 });
 
+// @route   GET api/users/getUsersByUUIDs
+// @desc    Get users by uuids
+// @access  Public
+router.post('/getUsersByUUIDs', (req, res) => {
+    const { uuids } = req.body;
+    console.log(req.body);
+
+    if (!uuids) {
+        return res.status(400).json({ msg: 'Please enter all fields', success: false });
+    }
+
+    User.find({ uuid: { $in: uuids } })
+        .then(users => {
+            if (!users) return res.status(400).json({ msg: 'User does not exists', success: false });
+            res.status(200).json({ users , success: true });
+        });
+});
+
+
 // @route   GET api/users/getUsers
 // @desc    Get 10 users from database if uuids is not matched and fetch first most nearest location users
 // @access  Public

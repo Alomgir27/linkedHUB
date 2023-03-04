@@ -15,6 +15,7 @@ const HomeScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const user = useSelector((state) => state?.data?.currentUser);
+  
 
 
   

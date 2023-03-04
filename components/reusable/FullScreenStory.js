@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, View, Image, TouchableOpacity, Text} from 'react-native';
 import { MaterialCommunityIcons } from 'react-native-vector-icons';
 
-import { Alert } from 'react-native';
 
 
 
@@ -21,7 +20,7 @@ const FullScreenStory = ({ navigation, route }) => {
         </View>
 
       <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Image style={styles.image} source={{ uri: story.image }} />
+        <Image style={styles.image} source={{ uri: story?.image }} />
       </TouchableOpacity>
     </View>
   );
@@ -32,7 +31,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'black',
     justifyContent: 'center',
-    // alignItems: 'center',
   },
   image: {
     width: '100%',

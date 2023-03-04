@@ -108,7 +108,12 @@ export default function data(state = initialState, action) {
         case USERS_STORY_BY_UUID_DATA_STATE_CHANGE:
             return {
                 ...state,
-                usersStoryByUUID: {...state.usersStoryByUUID, ...action.usersStoryByUUID}
+                //remove the old story if action.uuid is already in the state and add the new one
+                usersStoryByUUID: {
+                    ...state.usersStoryByUUID,
+                    [action.uuid]: action.usersStoryByUUID
+                }
+                
             }
         case USERS_CHAT_LIST_STATE_CHANGE:
             return {

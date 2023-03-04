@@ -1,5 +1,6 @@
 import React from "react";
 import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Constants from "expo-constants";
 import Navigation from "./Navigation";
 import { StyleSheet, LogBox } from "react-native";
@@ -8,6 +9,7 @@ import { Provider } from "react-redux";
 import { createStore, applyMiddleware } from "redux";
 import rootReducer from "./components/redux/reducers";
 import thunk from "redux-thunk";
+import 'react-native-gesture-handler';
 
 
 
@@ -30,12 +32,14 @@ const store = createStore(rootReducer, applyMiddleware(thunk));
 
 export default function App() {
   return (
-    <Provider store={store}>
-      <PaperProvider theme={theme}>
-        <Navigation style={styles.droidSafeArea} />
-        <StatusBar style="dark" />
-      </PaperProvider>
-     </Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <PaperProvider theme={theme}>
+          <Navigation style={styles.droidSafeArea} />
+          <StatusBar style="dark" />
+        </PaperProvider>
+      </Provider>
+    </GestureHandlerRootView>
   );
 }
 const styles = StyleSheet.create({

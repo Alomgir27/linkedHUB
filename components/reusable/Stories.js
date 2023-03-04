@@ -45,6 +45,13 @@ const Stories = (props) => {
   const user = useSelector(state => state?.data?.currentUser);
   const stories = useSelector(state => state?.data?.usersStory);
   const storiesByUUID = useSelector(state => state?.data?.usersStoryByUUID);
+
+  useSelector(state => console.log("storiesByUUID", state?.data));
+
+  if (!stories || stories.length === 0 || !storiesByUUID || Object.keys(storiesByUUID).length === 0) {
+    return null;
+  }
+
   
   const renderItem = ({ item }) => {
     return (
@@ -55,7 +62,7 @@ const Stories = (props) => {
             style={styles.storyAvatarBG}
           >
             <Image
-              source={{ uri: item.image }}
+              source={{ uri: item?.image }}
               style={[
                 styles.storyAvatar,
                 { borderColor: "white", borderWidth: 2 },
@@ -69,7 +76,7 @@ const Stories = (props) => {
             textAlign: "center",
           }}
         >
-          {item.name}
+          {item?.name}
         </Text>
       </View>
     );
@@ -80,7 +87,7 @@ const Stories = (props) => {
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
-        data={stories || []}
+        data={stories && stories.length > 0 ? stories : []}
         ListHeaderComponent={() => (
           <HeaderComponent user={user} text="Your story" {...props} />
         )}

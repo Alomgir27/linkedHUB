@@ -105,6 +105,7 @@ const storySchema = new Schema({
     profilePic: String,
     image: String,
     seenBy: [String],
+    likedBy: [String],
     createdAt: { type: Date, default: Date.now},
     updatedAt: String,
 });

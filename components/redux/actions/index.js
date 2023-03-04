@@ -38,6 +38,11 @@ export function clearData() {
 export function modifyStoryState(oldStories, newStories, user) {
     return ((dispatch) => {
         newStories.push(...oldStories);
+        //make stories remove duplicates
+        newStories = newStories.filter((item, index) => {
+            return newStories.findIndex((item2) => item2._id === item._id) === index;
+        });
+
         //sepate stories by same uuid
         let storiesByUUID = {};
         newStories.forEach((item) => {
@@ -92,7 +97,6 @@ export function modifyStoryState(oldStories, newStories, user) {
         }
         dispatch({ type: USERS_STORY_STATE_CHANGE, usersStory: stories })
         dispatch({ type: USERS_STORY_BY_UUID_STATE_CHANGE, usersStoryByUUID: storiesByUUID })
-        console.log("storiesByUUID", storiesByUUID)
     })
 }
 
