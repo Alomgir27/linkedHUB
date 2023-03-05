@@ -53,16 +53,19 @@ const Stories = (props) => {
   const stories = useSelector(state => state?.data?.usersStory);
   const storiesByUUID = useSelector(state => state?.data?.usersStoryByUUID);
 
+ 
+  const onStoryPress = (story) => {
+    props.navigation.navigate("StoryViewer", { stories: storiesByUUID[story.uuid] });
+    
+  };
 
-  if (!stories || stories.length === 0 || !storiesByUUID || Object.keys(storiesByUUID).length === 0) {
-    return null;
-  }
+
 
   
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item}) => {
     return (
       <View>
-        <TouchableOpacity onPress={() => props.navigation.navigate("StoryViewer", { stories: storiesByUUID[item.uuid] })}>
+        <TouchableOpacity onPress={() => onStoryPress(item)}>
           <LinearGradient
             colors={storiesByUUID[item.uuid]?.seen ? [Colors.grey500, Colors.grey500] : [Colors.blue500, Colors.blue700]}
             style={styles.storyAvatarBG}
@@ -97,7 +100,7 @@ const Stories = (props) => {
         ListHeaderComponent={() => (
           <HeaderComponent user={user} text="Your story" {...props} />
         )}
-        renderItem={(item) => renderItem(item, props)}
+        renderItem={(item) => renderItem(item)}
         keyExtractor={(item) => item._id}
         onEndReached={() => {
           if (stories.length > 0) {

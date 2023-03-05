@@ -43,6 +43,7 @@ const StoryViewer = ({route,  navigation }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const bottomSheetModalRef = useRef(null);
   const [lastTap, setLastTap] = useState(null);
+  const [likedBy, setLikedBy] = useState([]);
 
 
   const [users, setUsers] = useState([]);
@@ -83,7 +84,11 @@ const StoryViewer = ({route,  navigation }) => {
 
     useEffect(() => {
         setIsLove(stories[currentStoryIndex]?.likedBy?.includes(user?.uuid));
-    }, [currentStoryIndex]);
+    }, [currentStoryIndex, stories]);
+
+    useEffect(() => {
+        setLikedBy(stories[currentStoryIndex]?.likedBy);
+    }, [currentStoryIndex, stories]);
 
 
     useEffect(() => {
@@ -95,9 +100,9 @@ const StoryViewer = ({route,  navigation }) => {
             if (currentStoryIndex < stories.length - 1) {
                 setCurrentStoryIndex(currentStoryIndex + 1);
                 setUsers([]);
-
             }
-        }, 5000);
+            
+        }, 10000);
         return () => clearInterval(interval);
     }, [currentStoryIndex, isSheetOpen]);
 
@@ -123,6 +128,7 @@ const StoryViewer = ({route,  navigation }) => {
                 newStories[currentStoryIndex].likedBy = newStories[currentStoryIndex].likedBy.filter((item) => item !== user?.uuid);
                 dispatch({ type: USERS_STORY_BY_UUID_DATA_STATE_CHANGE, uuid, usersStoryByUUID: newStories });
                 setStories(newStories);
+                setLikedBy(newStories[currentStoryIndex]?.likedBy);
                 
 
             })
@@ -143,6 +149,7 @@ const StoryViewer = ({route,  navigation }) => {
                 newStories[currentStoryIndex].likedBy.push(user?.uuid);
                 dispatch({ type: USERS_STORY_BY_UUID_DATA_STATE_CHANGE, uuid, usersStoryByUUID: newStories });
                 setStories(newStories);
+                setLikedBy(newStories[currentStoryIndex]?.likedBy);
               
             })
             .catch((err) => {
@@ -204,7 +211,7 @@ const StoryViewer = ({route,  navigation }) => {
     setIsSheetOpen(true);
     (async () => {
       await axios.post(`${baseURL}/api/users/getUsersByUUIDs`, {
-        uuids: stories[currentStoryIndex]?.likedBy,
+        uuids: likedBy,
       })
       .then((res) => {
         setUsers(res?.data?.users);
@@ -213,7 +220,7 @@ const StoryViewer = ({route,  navigation }) => {
         console.log(err);
       });
     })();
-  }, []);
+  }, [likedBy]);
 
   const handleSheetChanges = useCallback((index) => {
     console.log('handleSheetChanges', index);
@@ -288,7 +295,7 @@ const StoryViewer = ({route,  navigation }) => {
 
           <TouchableOpacity onPress={handleLove} style={styles.loveButton}>
               <MaterialCommunityIcons name={isLove ? "heart" : "heart-outline"} size={32} color={isLove ? "red" : "white"} />
-              {isLove && (user?.uuid === stories[currentStoryIndex]?.uuid) && (
+              {isLove && (
                   <View style={styles.loveButtonActiveBorder} >
                       <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold', color: 'white' }}>{lovedCount(stories[currentStoryIndex]?.likedBy?.length)}</Text>
                   </View>

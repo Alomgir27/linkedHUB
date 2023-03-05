@@ -21,6 +21,8 @@ import styles from "./styles";
 import { baseURL } from "../config/baseURL";
 import axios from "axios";
 
+import LottieView from "lottie-react-native";
+
 
 
 export default function Signup({ navigation }) {
@@ -81,6 +83,14 @@ export default function Signup({ navigation }) {
   };
   return (
     <View style={{ backgroundColor: "#fff", flex: 1 }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <LottieView
+          source={require("../../assets/lottie/login.json")}
+          autoPlay
+          loop
+          style={{ width: 300, height: 300 }}
+        />
+      </View>
       <KeyboardAvoidingView
         style={{ flex: 1, justifyContent: "center", padding: 20 }}
       >

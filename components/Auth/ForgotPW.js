@@ -4,6 +4,7 @@ import { Button, Text, TextInput, Snackbar } from "react-native-paper";
 import { auth } from "../../firebase";
 import styles from "./styles";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import LottieView from "lottie-react-native";
 
 export default function Login({ navigation }) {
   const [Email, setEmail] = React.useState("");
@@ -32,6 +33,14 @@ export default function Login({ navigation }) {
   };
   return (
     <View style={{ backgroundColor: "#fff", flex: 1 }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <LottieView
+          source={require("../../assets/lottie/forgot-password.json")}
+          autoPlay
+          loop
+          style={{ width: 300, height: 300 }}
+        />
+      </View>
       <KeyboardAvoidingView
         style={{ flex: 1, justifyContent: "center", padding: 20 }}
       >

@@ -35,6 +35,10 @@ import { useSelector } from "react-redux";
 
 import styles from "./styles";
 
+import { clearData } from "../redux/actions";
+
+import { useDispatch } from "react-redux";
+
 const Tab = createMaterialTopTabNavigator();
 
 const Profile = ({ navigation }, props) => {
@@ -43,6 +47,8 @@ const Profile = ({ navigation }, props) => {
   const [savedPost, setSavedPost] = useState([]);
   
   const user = useSelector((state) => state?.data?.currentUser);
+  
+  const dispatch = useDispatch();
 
 
   const [loading, setLoading] = useState(false);
@@ -89,10 +95,12 @@ const Profile = ({ navigation }, props) => {
       {
         text: "Yes",
         onPress: () => {
+          dispatch(clearData());
           auth
             .signOut()
             .then(() => {
-              console.log("user signed out!");
+              console.log("User signed out!");
+              navigation.navigate("Login");
 
             })
             .catch((err) => {

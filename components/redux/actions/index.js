@@ -104,6 +104,7 @@ export function getUserByUUID(uuid, location) {
        await axios.post(`${baseURL}/api/users/getUserByUUID`, { uuid, location })
             .then(async (res) => {
                 if (res.data.success) {
+                    console.log(res.data.user)
                     dispatch({ type: USER_STATE_CHANGE, currentUser: res.data.user })
                     let uuids = res.data.user.following.concat(res.data.user.uuid)
                     uuids = uuids.concat(res.data.user.friends)

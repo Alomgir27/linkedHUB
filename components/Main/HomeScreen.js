@@ -12,6 +12,8 @@ import { getUserByUUID } from "../redux/actions";
 import * as Location from "expo-location";
 import { Alert } from "react-native";
 
+import { auth } from "../../firebase";
+
 
 
 
@@ -36,14 +38,17 @@ const HomeScreen = ({ navigation }) => {
       setPosts(posts);
       setLoading(false);
     });
-    // Alert.alert("Location", "Please allow location access to see posts near you");
     (async () => {
       let location = await Location.getCurrentPositionAsync({});
       let coordinates = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       };
-      dispatch(getUserByUUID(user.uuid, coordinates));
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            dispatch(getUserByUUID(user.uid, coordinates));
+        }
+      });
     })();
   };
 

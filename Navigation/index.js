@@ -174,6 +174,15 @@ export default function NavigationStack({ navigation }) {
               headerLargeTitle: true,
             }}
           />
+          <Stack.Screen
+            name="Main"
+            component={MainScreen}
+            options={{
+              headerShown: false,
+              headerTitle: "linkedHub",
+              title: "linkedHub",
+            }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     );
@@ -281,6 +290,14 @@ export default function NavigationStack({ navigation }) {
         <Stack.Screen
           name="FullScreenStory"
           component={FullScreenStory}
+          navigation={navigation}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Login"
+          component={Login}
           navigation={navigation}
           options={{
             headerShown: false,

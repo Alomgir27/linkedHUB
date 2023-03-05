@@ -73,7 +73,7 @@ const EditProfile = (props) => {
               longitude: location.coords.longitude,
             };
             dispatch(getUserByUUID(user.uuid, coordinates));
-            props.navigation.goBack();
+            props?.navigation.goBack();
         })
         .catch((err) => {
           console.log(err);
