@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { getUserByUUID } from "../redux/actions";
 import * as Location from "expo-location";
-import { Alert } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { auth } from "../../firebase";
 
@@ -46,7 +46,7 @@ const HomeScreen = ({ navigation }) => {
       };
       auth.onAuthStateChanged(async (user) => {
         if (user) {
-            dispatch(getUserByUUID(user.uid, coordinates));
+            dispatch(getUserByUUID(user.uid, coordinates, setLoading));
         }
       });
     })();
@@ -57,34 +57,51 @@ const HomeScreen = ({ navigation }) => {
     <View style={{ flex: 1, backgroundColor: Colors.grey200 }} >
       <Appbar.Header
         style={{
-          backgroundColor: "#fff0",
-          justifyContent: "space-between",
-          borderRadius: 15,
-          elevation: 0,
+          backgroundColor: "white",
+          shadowColor: "black",
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.5,
+          shadowRadius: 1,
+          elevation: 5,
         }}
       >
-        <Appbar.Action
-          icon={() => {
-            return <Feather name="camera" size={24} color="black" />;
-          }}
-          onPress={() => navigation.navigate("StoryScreen")}
-        />
-        <Image
-          source={require("../../assets/headTitle.png")}
-          style={{ height: 25, width: 160 }}
+        
+       {/* add appname linkedHUB */}
+        <Appbar.Content
+          title="linkedHUB"
+          titleStyle={{ shadowColor: "black", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 1, elevation: 5, color: "black", fontSize: 20 }}
+          onPress={() => navigation.navigate("Home")}
         />
         <Appbar.Action
-          icon={() => {
-            return (
-              <Ionicons
-                name="ios-chatbox-ellipses-outline"
-                size={24}
-                color="black"
-              />
-            );
-          }}
+          icon={() => (
+            <Feather name="message-circle" size={24} color="black" />
+          )}
           onPress={() => navigation.navigate("ChatScreen")}
         />
+       {/* Music player add */}
+
+       <Appbar.Action
+          icon={() => (
+            <MaterialCommunityIcons name="music-circle-outline" size={24} color="black" />
+          )}
+          onPress={() => navigation.navigate("Music")}
+        />
+
+        <Appbar.Action
+          icon={() => (
+            <Feather name="bell" size={24} color="black" />
+          )}
+          onPress={() => navigation.navigate("Notifications")}
+        />
+
+        <Appbar.Action
+          icon={() => (
+            <Ionicons name="ellipsis-vertical" size={24} color="black" />
+          )}
+          onPress={() => navigation.navigate("More")}
+        />
+
+
       </Appbar.Header>
 
       <AllPosts

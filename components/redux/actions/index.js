@@ -25,7 +25,6 @@ import {
     USER_FRIENDS_STATE_CHANGE,
     USER_FRIENDS_DATA_STATE_CHANGE,
     USERS_STORY_BY_UUID_STATE_CHANGE,
-    USERS_STORY_BY_UUID_DATA_STATE_CHANGE,
     CLEAR_DATA
 } from '../constant/index'
 
@@ -99,7 +98,7 @@ export function modifyStoryState(oldStories, newStories, user) {
     })
 }
 
-export function getUserByUUID(uuid, location) {
+export function getUserByUUID(uuid, location, callback) {
     return (async (dispatch) => {
        await axios.post(`${baseURL}/api/users/getUserByUUID`, { uuid, location })
             .then(async (res) => {
@@ -110,7 +109,7 @@ export function getUserByUUID(uuid, location) {
                     uuids = uuids.concat(res.data.user.friends)
                     dispatch(fetchUsers(uuids, location))
                     dispatch(fetchUsersStory(res?.data?.user))
-                    console.log('refreshed')
+                    callback(false)
                 }
             })
             .catch((err) => console.log(err))

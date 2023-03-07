@@ -46,7 +46,7 @@ const Stack = createNativeStackNavigator();
 
 export default function NavigationStack({ navigation }) {
 
-  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [login, setLogin] = useState(false);
 
   const dispatch = useDispatch();
@@ -74,8 +74,8 @@ export default function NavigationStack({ navigation }) {
       auth.onAuthStateChanged(async (user) => {
         if (!user) {
           setLogin(false);
-          console.log("user: ", user);
-          setLoaded(true);
+          setLoading(false);
+
         } 
         else if(!user.emailVerified){
          user.sendEmailVerification();
@@ -88,7 +88,7 @@ export default function NavigationStack({ navigation }) {
               onPress: () => {
                 user.sendEmailVerification();
                 setLogin(false);
-                setLoaded(true);
+                setLoading(false);
               }
             },
             {
@@ -96,7 +96,7 @@ export default function NavigationStack({ navigation }) {
               onPress: () => {
                 auth.signOut();
                 setLogin(false);
-                setLoaded(true);
+                setLoading(false);
               }
             },
           ],
@@ -110,8 +110,7 @@ export default function NavigationStack({ navigation }) {
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
           };
-          dispatch(getUserByUUID(user.uid, coordinates));
-          setLoaded(true);
+          dispatch(getUserByUUID(user.uid, coordinates, setLoading));
           setLogin(true);
           
         }
@@ -130,7 +129,7 @@ export default function NavigationStack({ navigation }) {
     );
   };
 
-  if (!loaded) {
+  if (loading) {
     return (
       <View
         style={{

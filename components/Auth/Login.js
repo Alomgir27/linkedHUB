@@ -53,7 +53,7 @@ export default function Login({ navigation }) {
         />
       </View>
       <KeyboardAvoidingView
-        style={{ flex: 1, justifyContent: "center", padding: 20}}
+        style={{ flex: 1, justifyContent: "center", padding: 20, bottom: 50 }}
       >
         <TextInput
           label="Email"
@@ -91,7 +91,7 @@ export default function Login({ navigation }) {
         </Button>
         <Button
           uppercase={false}
-          style={styles.button}
+          style={[styles.button, { marginBottom: -20 }]}
           onPress={() => navigation.navigate("ForgotPW")}
         >
           Forgot password?

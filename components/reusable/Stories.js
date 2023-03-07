@@ -19,7 +19,7 @@ const HeaderComponent = ({user, text, navigation}) => {
     <View>
       <TouchableOpacity onPress={() => navigation.navigate("StoryFileUploader")}>
         <LinearGradient
-          colors={[Colors.blue500, Colors.blue700]}
+          colors={[Colors.blue400, Colors.blue500, Colors.blue700, Colors.blue900]}
           style={styles.storyAvatarBG}
         >
           <Image
@@ -67,7 +67,7 @@ const Stories = (props) => {
       <View>
         <TouchableOpacity onPress={() => onStoryPress(item)}>
           <LinearGradient
-            colors={storiesByUUID[item.uuid]?.seen ? [Colors.grey500, Colors.grey500] : [Colors.blue500, Colors.blue700]}
+            colors={storiesByUUID[item.uuid]?.seen ? [Colors.grey400, Colors.grey500, Colors.grey600, Colors.grey700, Colors.grey800, Colors.grey900] : [Colors.blue400, Colors.blue500, Colors.blue700, Colors.blue900]}
             style={styles.storyAvatarBG}
           >
             <Image

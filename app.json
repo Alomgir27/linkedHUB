@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/adaptive-icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "linkedHUB",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",

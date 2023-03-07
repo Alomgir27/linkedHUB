@@ -133,7 +133,9 @@ export default function Signup({ navigation }) {
           }
         />
 
-        <Button style={styles.button} mode="contained" onPress={onSignUp}>
+        <Button style={styles.button}
+        mode="contained" 
+        onPress={onSignUp}>
           Sign up
         </Button>
         <Button
