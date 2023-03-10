@@ -11,7 +11,6 @@ import Register from "../components/Auth/Register";
 import ForgotPW from "../components/Auth/ForgotPW";
 
 import MainScreen from "../components/MainTab";
-import AddScreen from "../components/Main/Add";
 import SavePost from "../components/Main/Save";
 import UserPosts from "../components/Main/UserPosts";
 import EditProfile from "../components/Main/EditProfile";
@@ -32,6 +31,7 @@ import FullScreenStory from "../components/reusable/FullScreenStory";
 
 
 import StoryFileUploader from "../components/Upload/StoryFileUploader";
+import PostUploader from "../components/Upload/PostUploader";
 
 import { getUserByUUID } from "../components/redux/actions";
 
@@ -48,6 +48,8 @@ export default function NavigationStack({ navigation }) {
 
   const [loading, setLoading] = useState(true);
   const [login, setLogin] = useState(false);
+  const [coordinates, setCoordinates] = useState(null);
+  
 
   const dispatch = useDispatch();
 
@@ -60,7 +62,12 @@ export default function NavigationStack({ navigation }) {
         setErrorMsg('Permission to access location was denied');
         return;
       }
-     
+      let location = await Location.getCurrentPositionAsync({});
+      let coordinates = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+      setCoordinates(coordinates);
     })();
   }, []);
 
@@ -105,11 +112,7 @@ export default function NavigationStack({ navigation }) {
         );
         }
         else {
-          let location = await Location.getCurrentPositionAsync({});
-          let coordinates = {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-          };
+         
           dispatch(getUserByUUID(user.uid, coordinates, setLoading));
           setLogin(true);
           
@@ -204,11 +207,6 @@ export default function NavigationStack({ navigation }) {
 
         />
         <Stack.Screen
-          name="Add"
-          component={AddScreen}
-          navigation={navigation}
-        />
-        <Stack.Screen
           name="SavePost"
           component={SavePost}
           navigation={navigation}
@@ -279,6 +277,14 @@ export default function NavigationStack({ navigation }) {
           }}
         />
         <Stack.Screen
+          name="AddPost"
+          component={PostUploader}
+          navigation={navigation}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="StoryViewer"
           component={UserStoriesScreen}
           navigation={navigation}
@@ -287,7 +293,7 @@ export default function NavigationStack({ navigation }) {
           }}
         />
         <Stack.Screen
-          name="FullScreenStory"
+          name="FullScreenPicture"
           component={FullScreenStory}
           navigation={navigation}
           options={{

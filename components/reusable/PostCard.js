@@ -1,204 +1,433 @@
-import React, { useEffect, useState } from "react";
-import { View, Alert, TouchableOpacity } from "react-native";
-import {
-  Avatar,
-  Text,
-  Card,
-  Title,
-  IconButton,
-  Paragraph,
-  ActivityIndicator,
-  Caption,
-  Menu,
-  Provider,
-} from "react-native-paper";
-import { Image } from "react-native-elements";
-import { Feather } from "@expo/vector-icons";
-import { toDateTime } from "./reusableComponets";
-import { db, auth, fs } from "../../firebase";
-import {
-  savePost,
-  removeSavedPost,
-  deletePost,
-  likePost,
-  unlikePost,
-} from "../UserFunctions";
-import dynamicStyles from "./styles";
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet, Image, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { Icon } from 'react-native-elements';
+import Swiper from 'react-native-swiper';
+import { IconButton } from 'react-native-paper';  
+import { Feather } from '@expo/vector-icons';
+import VideoPlayerScreen from './VideoPlayerScreen';
+import moment from 'moment';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Pressable } from 'react-native';
 
-const PostCard = (props) => {
-  const {
-    caption,
-    url,
-    userName,
-    userProfilePic,
-    date,
-    userId,
-    likes,
-    post,
-    user,
-    savedPosts,
-    navigation,
-  } = props;
-  const styles = dynamicStyles();
-  const [savedPost, setSavedPost] = useState(false);
-  const [isLiked, setLiked] = useState(false);
-  const [visible, setVisible] = useState(false);
-  const [totalLikes, setTotalLikes] = useState(0);
-  const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
+import LottieView from 'lottie-react-native';
 
-  useEffect(() => {
-    if (post.likes) {
-      post.likes.includes(auth.currentUser.uid)
-        ? setLiked(true)
-        : setLiked(false);
-    }
-    setTotalLikes(post.likes?.length);
-    if (savedPosts) {
-      if (savedPosts.includes(post.id)) {
-        setSavedPost(true);
-      } else {
-        setSavedPost(false);
-      }
-    }
-  }, []);
-  const onIconPress = (event) => {
-    const { nativeEvent } = event;
-    const anchor = {
-      x: nativeEvent.pageX,
-      y: nativeEvent.pageY,
+const { width, height } = Dimensions.get('window');
+
+const Post = ({
+  downloadURLs,
+  index,
+  post,
+  uuid,
+  caption,
+  userName,
+  name,
+  profilePic,
+  savedPost,
+  date,
+  likes,
+  comments,
+  user,
+  navigation,
+  currentIndex,
+  location,
+}) => {
+    const [liked, setLiked] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [places, setPlaces] = useState("");
+    const [nowIndex, setNowIndex] = useState(0);
+    const [isMuted, setIsMuted] = useState(true);
+    const [isPause, setIsPause] = useState(false);
+    const [showBottom, setShowBottom] = useState(false);
+    const [showLottie, setShowLottie] = useState(false);
+
+    const [lastPress, setLastPress] = useState(0);
+    const [timer, setTimer] = useState(null);
+    const [firstPress, setFirstPress] = useState(true);
+  
+
+    useEffect(() => {
+      return () => {
+          if (timer) {
+              clearTimeout(timer);
+          }
+      };
+      }, [timer]);
+
+      
+
+    useEffect(() => {
+      (async () => {
+        const lat = location?.coordinates[1]
+        const lon = location?.coordinates[0];
+        const apiKey = "pk.4dd969766ea581f6c3cb31b810edd4b1";
+        // const url = `https://api.locationiq.com/v1/reverse.php?key=${apiKey}&lat=${lat}&lon=${lon}&format=json`;
+        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if(data?.address?.city_district) {
+          setPlaces(data?.address?.city_district + ", " + data?.address?.state);
+        } else {
+          setPlaces(data?.address?.city + ", " + data?.address?.state);
+        }
+
+      })();
+    }, []);
+
+  
+    const onLikePress = () => {
+      setLiked(!liked);
+    };
+  
+    const onSavePress = () => {
+      setSaved(!saved);
     };
 
-    setMenuAnchor(anchor);
-    openMenu();
-  };
-  const openMenu = () => {
-    setVisible(true);
-  };
-  const closeMenu = () => {
-    setVisible(false);
-  };
-  return (
-    <Card style={[styles.cardContainer, styles.elevation]}>
-      <Menu visible={visible} onDismiss={closeMenu} anchor={menuAnchor}>
-        <Menu.Item
-          onPress={() => {
-            Alert.alert("Delete", "Are you sure to want to delete this post?", [
-              {
-                text: "No",
-                onPress: () => console.log("Cancel Pressed"),
-                style: "cancel",
-              },
-              {
-                text: "Yes",
-                onPress: () => {
-                  deletePost(post.id);
-                },
-              },
-            ]);
-            setVisible(false);
-          }}
-          title="Delete"
-        />
-      </Menu>
-      <Card.Title
-        style={styles.cardTitle}
-        titleStyle={styles.cardTitleText}
-        title={userName}
-        left={(props) => (
-          <TouchableOpacity
-            onPress={() => {
-              auth.currentUser.uid == userId
-                ? navigation.navigate("Profile")
-                : navigation.navigate("OtherProfile", {
-                    user: user,
-                  });
-            }}
-          >
-            <Avatar.Image
-              size={44}
-              style={styles.elevation}
-              source={
-                userProfilePic
-                  ? { uri: userProfilePic }
-                  : require("../../assets/defaultProfilePic.png")
-              }
-            />
-          </TouchableOpacity>
-        )}
-        right={(props) =>
-          auth.currentUser.uid == userId && (
-            <IconButton {...props} icon="dots-vertical" onPress={onIconPress} />
-          )
+    const onVideoEnd = () => {
+      if(nowIndex < downloadURLs?.length - 1) {
+        setNowIndex(nowIndex + 1);
+      }
+    }
+
+    const onOnePress = () => {
+      setIsPause(!isPause);
+    }
+    const onDoublePress = () => {
+      setShowBottom(true);
+
+      if(liked) {
+        setLiked(false);
+      } else {
+        setLiked(true);
+      }
+
+      setShowLottie(true);
+      setTimeout(() => {
+        setShowLottie(false);
+      }, 1000);
+
+    }
+
+     
+
+    
+  const handleButtonPress = useCallback(() => {
+    const delta = new Date().getTime()
+    const doublePressDelay = 300;
+    if(firstPress) {
+        setFirstPress(false);
+        setTimer(setTimeout(() => {
+            setFirstPress(true);
+            setTimer(null);
+            onOnePress()
+        }, doublePressDelay));
+        setLastPress(delta);
+    } else {
+        if(delta - lastPress < doublePressDelay) {
+            clearTimeout(timer);
+            setFirstPress(true);
+             onDoublePress()
         }
-      />
-      <View style={styles.cardView}>
-        {url ? (
-          <Card.Cover
-            source={{
-              uri: url,
-            }}
-            style={styles.cardCover}
-          />
-        ) : (
-          <Image
-            style={styles.cardContainerDefauld}
-            PlaceholderContent={<ActivityIndicator size="large" />}
-          />
-        )}
-      </View>
+    }
+    }, [lastPress, timer, firstPress, onOnePress, onDoublePress]);
 
-      <Card.Actions style={styles.cardActionContainer}>
-        <View style={{ flexDirection: "row" }}>
-          <IconButton
-            {...props}
-            icon={isLiked ? "heart" : "heart-outline"}
-            onPress={() => {
-              isLiked
-                ? (unlikePost(post.id),
-                  totalLikes > 0
-                    ? setTotalLikes(totalLikes - 1)
-                    : setTotalLikes(0))
-                : (likePost(post.id), setTotalLikes(totalLikes + 1));
-              setLiked(!isLiked);
-            }}
-            style={[styles.cardActionButton, styles.elevation]}
-          />
-          {/* Will implement this features in future */}
-          {/* <IconButton
-            {...props}
-            icon="message-outline"
-            onPress={() => {}}
-            style={[styles.cardActionButton, styles.elevation]}
-          />
-         <IconButton
-            {...props}
-            icon={({ color }) => (
-              <Feather name="send" size={22} color={color} />
-            )}
-            onPress={() => {}}
-            style={[styles.cardActionButton, styles.elevation]}
-          /> */}
+   
+
+  
+    const renderMedia = () => (
+      <Swiper style={styles.wrapper} showsButtons={false} loop={false} onIndexChanged={(index) => setNowIndex(index)} showsPagination={false} index={nowIndex}>
+        {downloadURLs?.map((media, index2) => {
+          if (media.type === "image") {
+            return (
+              <View key={index2} style={{ flex: 1 }}>
+                <Image
+                  key={index2}
+                  style={styles.image}
+                  source={{ uri: media.downloadURL }}
+                />
+                <View style={{ position : 'absolute', bottom : 10, right : 10, backgroundColor : 'white', padding : 5, borderRadius : 5, flexDirection : 'row', alignItems : 'center' }}>
+                  <Text style={{ fontSize : 12, color : 'black' }}>{nowIndex + 1}/{downloadURLs?.length}</Text>
+                </View>
+             </View>
+            );
+          } else if (media.type === "video") {
+            return (
+              <View key={index2} style={{ flex: 1 }}>
+                <VideoPlayerScreen
+                  key={index2}
+                  video={media.downloadURL}
+                  currentIndex={currentIndex}
+                  index={index}
+                  nowIndex={nowIndex}
+                  index2={index2}
+                  isMuted={isMuted}
+                  setIsMuted={setIsMuted}
+                  onVideoEnd={onVideoEnd}
+                  onDoublePress={onDoublePress}
+                  onOnePress={onOnePress}
+                  isPause={isPause}
+                  setIsPause={setIsPause}
+                  
+                />
+                 <View style={{ position : 'absolute', top : 20, right : 10, backgroundColor : 'white', padding : 5, borderRadius : 5, flexDirection : 'row', alignItems : 'center' }}>
+                    <Text style={{ fontSize : 12, color : 'black' }}>{nowIndex + 1}/{downloadURLs?.length}</Text>
+                  </View>
+             </View>
+            );
+          }
+        })}
+        
+      </Swiper>
+    );
+
+
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Image
+              style={styles.profilePic}
+              source={{ uri: profilePic }}
+            />
+            <View style={styles.headerText}>
+              <Text style={styles.userName}>{userName || name}</Text>
+              <Text style={styles.location}>{places}</Text>
+            </View>
+          </View>
+          <View style={styles.headerRight}>
+            <IconButton
+              icon="dots-vertical"
+              color="black"
+              size={20}
+              onPress={() => navigation.navigate("PostOptions", { post })}
+            />
+          </View>
         </View>
+        <Pressable onPress={handleButtonPress} style={{ flex: 1 }}>
+          {renderMedia()}
+        </Pressable>
+        <TouchableOpacity onPress={() => setShowBottom(!showBottom)}>
+          <View style={styles.caption}>
+            <Text style={styles.captionText}>
+              {caption}
+            </Text>
+          </View>
+          <View style={styles.date}>
+            <Text style={styles.dateText}>{moment(date).fromNow()}</Text>
+          </View>
+        </TouchableOpacity>
+         {showBottom && (
+          <View>
+            <View style={styles.footer}>
+              <View style={styles.footerLeft}>
+                <View style={styles.footerIcons}>
+                      <IconButton
+                        icon="message-outline"
+                        onPress={() => {}}
+                        style={[styles.cardActionButton, styles.elevation]}
+                      />
+                    <IconButton
+                      icon={({ color }) => (
+                        <Feather name="send" size={22} color={color} />
+                      )}
+                      onPress={() => {}}
+                      style={[styles.cardActionButton, styles.elevation]}
+                    />
+                    <IconButton
+                        icon={saved ? "bookmark" : "bookmark-outline"}
+                        color={saved ? "black" : "black"}
+                        size={25}
+                        onPress={onSavePress}
+                        style={[styles.cardActionButton, styles.elevation]}
+                    />
+                </View>
+              </View>
+              <View style={styles.footerRight}>
+                  <View style={styles.footerIcons}>
+                      <IconButton
+                        icon={liked ? "heart" : "heart-outline"}
+                        color={liked ? "red" : "black"}
+                        size={25}
+                        onPress={onLikePress}
+                        style={[styles.cardActionButton, styles.elevation]}
+                      />
+                  </View>
+                </View>
+            </View>
+            <View style={styles.likes}>
+              <Text style={styles.likesText}>
+                {likes} {likes === 1 ? "like" : likes > 1 ? "likes" : ""}
+              </Text>
+            </View>
+          </View>
+         )}
+         {showLottie && (
+          <View style={styles.lottie}>
+              <LottieView
+                source={require("../../assets/lottie/heart-with-particles.json")}
+                autoPlay
+                loop={false}
+                speed={1.5}
+                onAnimationFinish={() => setShowLottie(false)}
+              />
+            </View>
+           )}
 
-        <IconButton
-          {...props}
-          icon={savedPost ? "bookmark" : "bookmark-outline"}
-          onPress={() => {
-            savedPost ? removeSavedPost(post.id) : savePost(post.id);
-            setSavedPost(!savedPost);
-          }}
-          style={[styles.cardActionButton, styles.elevation]}
-        />
-      </Card.Actions>
-      <Card.Content style={styles.cardContent}>
-        <Title>
-          <Text style={{ fontWeight: "bold" }}>{totalLikes}</Text> Likes
-        </Title>
-        {caption?.length > 0 && <Paragraph>{caption}</Paragraph>}
-        <Caption style={styles.timeStyle}>{toDateTime(date)}</Caption>
-      </Card.Content>
-    </Card>
-  );
-};
+      </View>
+    );
+  };
+  
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "white",
+      height: height * 0.8,
+      width: width,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: 10,
+    },
+    headerLeft: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    headerRight: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    profilePic: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      marginRight: 10,
+    },
+    headerText: {
+      flexDirection: "column",
+    },
+    userName: {
+      fontWeight: "bold",
+    },
+    location: {
+      color: "gray",
+    },
+   
+    footer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: 10,
+    },
+    footerLeft: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-start",
+    },
+    footerRight: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "flex-end",
+    },
+    footerIcons: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginRight: 10,
+      marginLeft: 10,
+    },
+    likes: {
+      padding: 10,
+    },
+    likesText: {
+      fontWeight: "bold",
+    },
+    caption: {
+      paddingTop: 10,
+      paddingLeft: 10,
+      paddingRight: 10,
+    },
+    captionText: {
+      fontWeight: "light",
+    },
+    comments: {
+      padding: 10,
+    },
+    commentText: {
+      fontWeight: "bold",
+    },
+    date: {
+      padding: 10,
+    },
+    dateText: {
+      color: "gray",
+    },
+    cardActionButton: {
+      backgroundColor: "white",
+      borderRadius: 50,
+      padding: 5,
+      margin: 5,
+    },
+    elevation: {
+      elevation: 5,
+      shadowOffset: {
+        width: 2,
+        height: 2,
+      },
+      shadowOpacity: 0.2,
+      shadowRadius: 3,
+    },
+    image: {
+      flex: 1,
+      width: "100%",
+      height: "100%",
+      resizeMode: "cover",
+    },
+    video: {
+      flex: 1,
+      width: "100%",
+      height: "100%",
+      resizeMode: "cover",
+    },
+    slide: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "transparent",
+    },
+    text: {
+      color: "#fff",
+      fontSize: 30,
+      fontWeight: "bold",
+    },
+    paginationStyle: {
+      position: "absolute",
+      bottom: 10,
+      right: 10,
+    },
+    paginationText: {
+      color: "#fff",
+      fontSize: 20,
+    },
+    lottie: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      justifyContent: "center",
+      alignItems: "center",
+      width: width,
+      height: height * 0.6
+    },
+    
 
-export default PostCard;
+
+    
+  });
+
+   
+  
+
+    
+  
+  export default Post;

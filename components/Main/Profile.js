@@ -19,6 +19,7 @@ import {
   ActivityIndicator,
   IconButton,
   Caption,
+  Modal,
 } from "react-native-paper";
 import { Text } from "react-native-elements";
 
@@ -33,6 +34,12 @@ import { createMaterialTopTabNavigator } from "@react-navigation/material-top-ta
 import { useFocusEffect } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { BottomSheet } from "react-native-elements";
+import { ScrollView } from "react-native-gesture-handler";
+import { useIsFocused } from "@react-navigation/native";
+
+
 import styles from "./styles";
 
 import { clearData } from "../redux/actions";
@@ -42,12 +49,12 @@ import { useDispatch } from "react-redux";
 const Tab = createMaterialTopTabNavigator();
 
 const Profile = ({ navigation }, props) => {
+
+
   const width = useWindowDimensions().width;
   const [post, setpost] = useState([]);
   const [savedPost, setSavedPost] = useState([]);
-  
   const user = useSelector((state) => state?.data?.currentUser);
-  
   const dispatch = useDispatch();
 
 
@@ -76,6 +83,7 @@ const Profile = ({ navigation }, props) => {
       setLoading(false);
     });
   };
+
   const fetchSavedPosts = (savedPosts) => {
     console.log("savedPosts: ", savedPosts);
     setLoading(true);
@@ -85,34 +93,11 @@ const Profile = ({ navigation }, props) => {
       setLoading(false);
     });
   };
-  const onLogoutPress = () => {
-    Alert.alert("Log Out", "Are you sure?", [
-      {
-        text: "No",
-        onPress: () => console.log("Cancel Pressed"),
-        style: "cancel",
-      },
-      {
-        text: "Yes",
-        onPress: () => {
-          dispatch(clearData());
-          auth
-            .signOut()
-            .then(() => {
-              console.log("User signed out!");
-              navigation.navigate("Login");
 
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        },
-      },
-    ]);
-  };
-  const onLSettingPress = () => {
-    navigation.navigate("Settings");
-  };
+
+ 
+
+
   const renderItem = ({ item, index }) => {
     return (
       <TouchableOpacity
@@ -216,7 +201,6 @@ const Profile = ({ navigation }, props) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* header */}
 
       <Appbar.Header
         style={{
@@ -229,8 +213,10 @@ const Profile = ({ navigation }, props) => {
           title={user?.userName ? user?.userName : user?.name}
           titleStyle={{ fontWeight: "bold" }}
         />
-        {/* <Appbar.Action icon="cog" onPress={onLSettingPress} /> */}
-        <Appbar.Action icon="logout" onPress={onLogoutPress} />
+       
+
+
+
       </Appbar.Header>
       <View style={styles.contentContainer}>
         <View style={styles.userRaw}>
@@ -315,6 +301,11 @@ const Profile = ({ navigation }, props) => {
           component={PostsTaggedScreen}
         />
       </Tab.Navigator>
+
+      <TouchableOpacity style={{ position: "absolute", bottom: 20, right: 20, backgroundColor: "#84a59d", padding: 10, borderRadius: 50 }} onPress={() => navigation.navigate("AddPost")}>
+        <MaterialIcons name="add" size={24} color="white" />
+      </TouchableOpacity>
+
     </SafeAreaView>
   );
 };

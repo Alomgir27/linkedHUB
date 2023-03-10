@@ -105,20 +105,21 @@ export function getUserByUUID(uuid, location, callback) {
                 if (res.data.success) {
                     console.log(res.data.user)
                     dispatch({ type: USER_STATE_CHANGE, currentUser: res.data.user })
+                    callback(false)
                     let uuids = res.data.user.following.concat(res.data.user.uuid)
                     uuids = uuids.concat(res.data.user.friends)
-                    dispatch(fetchUsers(uuids, location))
                     dispatch(fetchUsersStory(res?.data?.user))
-                    callback(false)
+                    // dispatch(fetchUsers(uuids, location))
+                    dispatch(fetchUserPosts(uuids))
                 }
             })
             .catch((err) => console.log(err))
     })
 }
 
-export function fetchUserPosts(uuid) {
+export function fetchUserPosts(uuids) {
     return (async (dispatch) => {
-        await axios.post(`${baseURL}/api/posts/getUserPosts`, { uuid })
+        await axios.post(`${baseURL}/api/posts/getPosts`, { uuids })
             .then(async (res) => {
                 if (res.data.success) {
                     
@@ -129,9 +130,9 @@ export function fetchUserPosts(uuid) {
     })
 }
 
-export function fetchUserPostsMore(uuid, lastPost) {
+export function fetchUserPostsMore(uuids, lastPost) {
     return (async (dispatch) => {
-        await axios.post(`${baseURL}/api/posts/getUserPostsMore`, { uuid, lastPost })
+        await axios.post(`${baseURL}/api/posts/getPostsMore`, { uuids, lastPost })
             .then((res) => {
                 if (res.data.success) {
                     dispatch({ type: USER_POSTS_DATA_STATE_CHANGE, posts: res.data.posts })
@@ -324,7 +325,7 @@ export function fetchUsersPosts(uuids) {
         await axios.post(`${baseURL}/api/posts/getUserPosts`, { uuids })
             .then((res) => {
                 if (res.data.success) {
-                    dispatch({ type: USERS_POSTS_STATE_CHANGE, userPosts : res.data.userPosts })
+                    dispatch({ type: USERS_POSTS_STATE_CHANGE, userPosts: res.data.userPosts })
                 }
             })
             .catch((err) => console.log(err))

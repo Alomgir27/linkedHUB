@@ -78,7 +78,7 @@ router.post('/getUserByUUID', (req, res) => {
         .then(user => {
             if (!user) return res.status(400).json({ msg: 'User does not exists', success: false });
 
-            let locationObj = { type: "Point", coordinates: [location.longitude, location.latitude] };
+            let locationObj = { type: "Point", coordinates: [location?.longitude || 0, location?.latitude || 0] };
 
             user.location = locationObj;
             user.save()
@@ -125,7 +125,7 @@ router.post('/getUsers', async (req, res) => {
 
 
     //get 10 users from database if uuids is not matched and fetch first most nearest location users
-    let locationObj = { type: "Point", coordinates: [location.longitude, location.latitude] };
+    let locationObj = { type: "Point", coordinates: [location?.longitude || 0, location?.latitude || 0] };
     User.aggregate([
         {
             $geoNear: {
@@ -172,7 +172,7 @@ router.post('/getUsersMore', (req, res) => {
     }
 
     //get 10 users from database if uuids is not matched after lastUser and fetch first most nearest location users
-    let locationObj = { type: "Point", coordinates: [location.longitude, location.latitude] };
+    let locationObj = { type: "Point", coordinates: [location?.longitude || 0, location?.latitude || 0] };
     User.aggregate([
         {
             $geoNear: {

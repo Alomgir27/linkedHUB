@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import Video from 'react-native-video';
+import { Video } from 'react-native';
 
 import { Camera } from 'expo-camera';
 

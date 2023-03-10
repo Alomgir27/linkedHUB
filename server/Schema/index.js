@@ -56,10 +56,11 @@ const postSchema = new Schema({
     userName: String,
     profilePic: String,
     caption: String,
-    type: String,
-    image: String,
-    video: String,
-    file: String,
+    downloadURLs: [Object],
+    location: {
+        type: { type: String, default: 'Point' },
+        coordinates: { type: [Number], default: [0, 0], index: '2dsphere' },
+    },
     likes: [String],
     comments: [String],
     createdAt: { type: Date, default: Date.now},
@@ -132,6 +133,7 @@ const Story = mongoose.model("Story", storySchema);
 const ShortVideo = mongoose.model("ShortVideo", shortVideos);
 
 User.createIndexes([{"location": "2dsphere"}]);
+Post.createIndexes([{"location": "2dsphere"}]);
 
 module.exports = {
     User,

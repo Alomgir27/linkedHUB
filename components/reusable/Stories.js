@@ -16,10 +16,10 @@ import { useDispatch } from "react-redux";
 const HeaderComponent = ({user, text, navigation}) => {
   const styles = dynamicStyles();
   return (
-    <View>
+    <View style={{ flex: 1, marginVertical: 10 }}>
       <TouchableOpacity onPress={() => navigation.navigate("StoryFileUploader")}>
         <LinearGradient
-          colors={[Colors.blue400, Colors.blue500, Colors.blue700, Colors.blue900]}
+          colors={[Colors.purple400, Colors.purple500, Colors.purple700, Colors.purple900]}
           style={styles.storyAvatarBG}
         >
           <Image
@@ -64,7 +64,7 @@ const Stories = (props) => {
   
   const renderItem = ({ item}) => {
     return (
-      <View>
+      <View style={{ flex: 1, marginVertical: 10 }}>
         <TouchableOpacity onPress={() => onStoryPress(item)}>
           <LinearGradient
             colors={storiesByUUID[item.uuid]?.seen ? [Colors.grey400, Colors.grey500, Colors.grey600, Colors.grey700, Colors.grey800, Colors.grey900] : [Colors.blue400, Colors.blue500, Colors.blue700, Colors.blue900]}

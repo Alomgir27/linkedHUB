@@ -74,9 +74,9 @@ const HomeScreen = ({ navigation }) => {
         />
         <Appbar.Action
           icon={() => (
-            <Feather name="message-circle" size={24} color="black" />
+            <MaterialCommunityIcons name="magnify" size={24} color="black" />
           )}
-          onPress={() => navigation.navigate("ChatScreen")}
+          onPress={() => navigation.navigate("Search")}
         />
        {/* Music player add */}
 

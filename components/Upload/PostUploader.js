@@ -1,12 +1,45 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Image, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import firebase from 'firebase';
+//This page is for clicking or selecting picture to upload
 
-const PostUploader = () => {
-  const [image, setImage] = useState(null);
-  const [caption, setCaption] = useState('');
-  const [uploading, setUploading] = useState(false);
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, TouchableOpacity, Image, SafeAreaView } from "react-native";
+import { Camera } from "expo-camera";
+import { Button, Colors, IconButton } from "react-native-paper";
+import * as ImagePicker from "expo-image-picker";
+import { MaterialIcons, FontAwesome, AntDesign } from "@expo/vector-icons";
+import styles from "./styles";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Swiper from 'react-native-swiper';
+
+
+
+
+export default function Add({ navigation }) {
+  const [hasCameraPermission, setHasCameraPermission] = useState(null);
+  const [hasGalleryPermission, setHasGalleryPermission] = useState(null);
+  const [camera, setCamera] = useState(null);
+  const [type, setType] = useState(Camera.Constants.Type.back);
+  const [flesh, setFlesh] = useState(Camera.Constants.FlashMode.off);
+  const [images, setImages] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      const cameraStatus = await Camera.requestCameraPermissionsAsync();
+      setHasCameraPermission(cameraStatus.status === "granted");
+      const galleryStatus =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      setHasGalleryPermission(galleryStatus.status === "granted");
+    })();
+  }, []);
+
+  const takePicture = async () => {
+    if (camera) {
+      const data = await camera.takePictureAsync({
+        quality: 1,
+        base64: true
+      });
+      setImages([...images, data]);
+    }
+  };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -16,65 +49,180 @@ const PostUploader = () => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      quality: 1,
+      allowsMultipleSelection: true,      
+    });
+
+    
+
+    if (!result.canceled) {
+      console.log(result);
+      let images = [];
+      result.assets.map((item) => {
+        images.push(item)
+      });
+      setImages(images);
+     
+    }
+
+  };
+
+  const OpenCam = async () => {
+    let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
     });
+    console.log(result);
 
-    if (!result.cancelled) {
-      setImage(result.uri);
+    if (!result.canceled) {
+     setImages([...images, result]);
     }
   };
 
-  const uploadPost = async () => {
-    if (!image) {
-      Alert.alert('Error', 'You need to select an image to upload.');
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      const response = await fetch(image);
-      const blob = await response.blob();
-      const ref = firebase.storage().ref().child(`posts/${Math.random().toString(36).substring(2)}`);
-      const snapshot = await ref.put(blob);
-
-      const downloadURL = await snapshot.ref.getDownloadURL();
-
-      firebase.firestore().collection('posts').add({
-        imageUrl: downloadURL,
-        caption,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-
-      Alert.alert('Success', 'Post uploaded successfully');
-
-      setImage(null);
-      setCaption('');
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'An error occurred while uploading your post.');
-    }
-
-    setUploading(false);
-  };
-
+  if (
+    hasCameraPermission === false ||
+    hasCameraPermission === null ||
+    hasGalleryPermission === false
+  ) {
+    return (
+      <View style={[styles.Camcontainer, { paddingHorizontal: 30 }]}>
+        <Text>
+          Camera access is denied. Please Go to settings and turn on the camera
+          access.
+        </Text>
+      </View>
+    );
+  }
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      {image && <Image source={{ uri: image }} style={{ width: 200, height: 200, marginBottom: 20 }} />}
-      <TouchableOpacity onPress={pickImage} style={{ padding: 10, backgroundColor: '#ccc', borderRadius: 5, marginBottom: 20 }}>
-        <Text>Select Image</Text>
-      </TouchableOpacity>
-      <TextInput placeholder="Enter caption" value={caption} onChangeText={setCaption} style={{ padding: 10, backgroundColor: '#fff', borderRadius: 5, marginBottom: 20, width: '100%' }} />
-      <TouchableOpacity onPress={uploadPost} style={{ padding: 10, backgroundColor: '#007AFF', borderRadius: 5, width: '100%' }}>
-        {uploading ? (
-          <ActivityIndicator color="#fff" />
+    <SafeAreaView style={{ flex: 1 }}>
+      {!images.length && (
+        <MaterialCommunityIcons
+          name="close"
+          size={30}
+          color="black"
+          style={{ position: "absolute", top: 40, right: 20, zIndex: 1 }}
+          onPress={() => {
+            setImages([]);
+            navigation.goBack();
+          }}
+        />
+      )}
+      <View style={styles.Camcontainer}>
+        {!images.length ? (
+          <Camera
+            flashMode={flesh}
+            ref={(ref) => setCamera(ref)}
+            style={styles.preview}
+            type={type}
+            autofocus={Camera.Constants.AutoFocus.on}
+          />
         ) : (
-          <Text style={{ color: '#fff', textAlign: 'center' }}>Upload Post</Text>
+          <View style={styles.containerImg}>
+            <Swiper
+              style={styles.wrapper}
+              showsButtons={true}
+              loop={false}
+              showsPagination={false}
+            >
+              {images.map((image, index) => (
+                <View style={styles.slide} key={index}>
+                  <Image
+                    source={{ uri: image.uri }}
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                </View>
+              ))}
+            </Swiper>
+           
+            
+            <IconButton
+              icon="close"
+              color="#fff"
+              onPress={() => setImages([])}
+              size={30}
+              style={{
+                position: "absolute",
+                right: 10,
+                top: 20,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.8,
+                shadowRadius: 8,
+                elevation: 15,
+                zIndex: 1,
+              }}
+            >
+              Clear screen
+            </IconButton>
+          </View>
         )}
-      </TouchableOpacity>
-    </View>
-  );
-};
+      </View>
+      {!images.length ? (
+        <TouchableOpacity onPress={takePicture}>
+          <MaterialCommunityIcons
+            name="circle-slice-8"
+            color={Colors.blue500}
+            size={65}
+            style={{
+              alignSelf: "center",
+              position: "absolute",
+              bottom: 20,
+            }}
+          />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("SavePost", { images });
+          }}
+        >
+          <MaterialCommunityIcons
+            name="check"
+            color={Colors.blue500}
+            size={65}
+            style={{
+              alignSelf: "center",
+              position: "absolute",
+              bottom: 20,
+            }}
+          />
+          
+        </TouchableOpacity>
+      )}
+      <View style={styles.buttonContainer}>
+        <MaterialCommunityIcons name='video-image' size={30} color='black' onPress={pickImage} />
+        {/* <IconButton size={30} icon="image" onPress={pickImage} /> */}
+        <IconButton size={30} icon="camera" onPress={OpenCam} />
+        <IconButton
+          size={30}
+          icon={flesh ? "flash" : "flash-off"}
+          onPress={() => {
+            setFlesh(
+              flesh === Camera.Constants.FlashMode.off
+                ? Camera.Constants.FlashMode.on
+                : Camera.Constants.FlashMode.off
+            );
+          }}
+        ></IconButton>
 
-export default PostUploader;
+        <TouchableOpacity
+          onPress={() => {
+            setType(
+              type === Camera.Constants.Type.back
+                ? Camera.Constants.Type.front
+                : Camera.Constants.Type.back
+            );
+          }}
+        >
+          <MaterialIcons
+            name={type ? "camera-front" : "camera-rear"}
+            color={"#000"}
+            size={30}
+            style={styles.flipcamera}
+          />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}

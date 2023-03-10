@@ -21,6 +21,7 @@ import {
 import { Ionicons, AntDesign , FontAwesome5, FontAwesome} from "@expo/vector-icons";
 import { Colors } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
+import ChatScreen from "./chat/ChatList";
 
 
 
@@ -68,8 +69,8 @@ const Main = ({ navigation }) => {
           iconName = focused ? "ios-person" : "ios-person-outline";
           size = focused ? 30 : 28;
           color = "#a2d2ff";
-        } else if (route.name === "Search") {
-          iconName = focused ? "ios-search" : "ios-search-outline";
+        } else if (route.name === "ChatScreen") {
+          iconName = focused ? "chatbubbles" : "chatbubbles-outline";
           size = focused ? 32 : 30;
           color = "#a2d2ff";
         } else if (route.name === "ShortVideo") {
@@ -192,7 +193,6 @@ const Main = ({ navigation }) => {
         component={HomeScreen}
       />
       
-      {/* <Tab.Screen name="Search" component={searchScreen} /> */}
       <Tab.Screen name="ShortVideo" component={ShortVideo} />
       <Tab.Screen
         name="AddContainer"
@@ -200,7 +200,7 @@ const Main = ({ navigation }) => {
         listeners={({ navigation }) => ({
           tabPress: (event) => {
             event.preventDefault();
-            navigation.navigate("Add");
+            navigation.navigate("AddPost");
           },
         })}
         options={{
@@ -221,7 +221,7 @@ const Main = ({ navigation }) => {
           ),
         }}
       />
-      <Tab.Screen name="Search" component={searchScreen} />
+      <Tab.Screen name="ChatScreen" component={ChatScreen} />
       <Tab.Screen name="Profile" component={profileScreen} />
     </Tab.Navigator>
     </View>

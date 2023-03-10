@@ -127,6 +127,7 @@ function ChatList({ navigation }) {
       </Appbar.Header>
 
 
+
       <View style={{flexDirection: 'row', alignItems: 'center', padding: 10, borderBottomWidth: 1, borderBottomColor: '#ccc'}}>
         <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#eee', padding: 5, borderRadius: 25}}>
           <Ionicons name="ios-search" size={24} color="black" style={{marginLeft: 5}} />
@@ -135,13 +136,13 @@ function ChatList({ navigation }) {
 
         <TouchableOpacity style={{marginLeft: 10}}>
           <Ionicons name="ios-qr-code" size={24} color="black" 
-          onPress={() => Alert.alert('QR Code', 'This feature is not available yet.')} />
+             onPress={() => Alert.alert('QR Code', 'This feature is not available yet.')} />
         </TouchableOpacity>
-        
       </View>
 
-      <View style={{flexDirection: 'row', alignItems: 'center', padding: 10, borderBottomWidth: 1, borderBottomColor: '#ccc'}}>
-        <Stories navigation={navigation}  />
+      <View style={{ flex: 1 / 3.5, flexDirection: 'row' }}>
+          <Stories navigation={navigation}  />
+
       </View>
 
       
