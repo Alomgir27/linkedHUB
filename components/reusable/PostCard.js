@@ -30,13 +30,16 @@ const Post = ({
   navigation,
   currentIndex,
   location,
+  isMuted, 
+  setIsMuted,
+  isPause,  
+   setIsPause
 }) => {
     const [liked, setLiked] = useState(false);
     const [saved, setSaved] = useState(false);
     const [places, setPlaces] = useState("");
     const [nowIndex, setNowIndex] = useState(0);
-    const [isMuted, setIsMuted] = useState(true);
-    const [isPause, setIsPause] = useState(false);
+    
     const [showBottom, setShowBottom] = useState(false);
     const [showLottie, setShowLottie] = useState(false);
 
@@ -59,7 +62,7 @@ const Post = ({
       (async () => {
         const lat = location?.coordinates[1]
         const lon = location?.coordinates[0];
-        const apiKey = "pk.4dd969766ea581f6c3cb31b810edd4b1";
+        // const apiKey = "pk.4dd969766ea581f6c3cb31b810edd4b1";
         // const url = `https://api.locationiq.com/v1/reverse.php?key=${apiKey}&lat=${lat}&lon=${lon}&format=json`;
         const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
         const response = await fetch(url);
@@ -84,7 +87,10 @@ const Post = ({
 
     const onVideoEnd = () => {
       if(nowIndex < downloadURLs?.length - 1) {
-        setNowIndex(nowIndex + 1);
+        setInterval(() => {
+          setNowIndex(nowIndex + 1);
+        
+        }, 5000);
       }
     }
 
@@ -133,7 +139,7 @@ const Post = ({
    
 
   
-    const renderMedia = () => (
+    const renderMedia = useCallback(() => (
       <Swiper style={styles.wrapper} showsButtons={false} loop={false} onIndexChanged={(index) => setNowIndex(index)} showsPagination={false} index={nowIndex}>
         {downloadURLs?.map((media, index2) => {
           if (media.type === "image") {
@@ -175,9 +181,8 @@ const Post = ({
             );
           }
         })}
-        
       </Swiper>
-    );
+    ), [downloadURLs, currentIndex, index, nowIndex, isMuted, setIsMuted, onVideoEnd, onDoublePress, onOnePress, isPause, setIsPause]);
 
 
     return (
@@ -263,7 +268,7 @@ const Post = ({
          {showLottie && (
           <View style={styles.lottie}>
               <LottieView
-                source={require("../../assets/lottie/heart-with-particles.json")}
+                source={require("../../assets/lottie/twitter-favorite-heart.json")}
                 autoPlay
                 loop={false}
                 speed={1.5}
@@ -419,10 +424,9 @@ const Post = ({
       width: width,
       height: height * 0.6
     },
-    
-
-
-    
+    wrapper: {
+      zIndex: 1000
+    }
   });
 
    

@@ -1,10 +1,16 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, Image, ImageBackground } from "react-native";
+import { View, Text, Image, ImageBackground, Alert } from "react-native";
 import { Appbar, Colors } from "react-native-paper";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import AllPosts from "./AllPosts";
 import { fetchAllPosts, fetchUser } from "../../components/UserFunctions";
 import Stories from "../reusable/Stories";
+
+import { fetchUserPosts } from "../redux/actions";
+import { 
+  USER_POSTS_STATE_CHANGE,
+  USERS_POSTS_DATA_STATE_CHANGE
+ } from "../redux/constant";
 
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
@@ -20,36 +26,44 @@ import { auth } from "../../firebase";
 const HomeScreen = ({ navigation }) => {
 
 
-  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isPause, setIsPause] = useState(false);
   const user = useSelector((state) => state?.data?.currentUser);
+  const posts = useSelector((state) => state?.data?.posts);
   const dispatch = useDispatch();
+
+
+  useEffect(() => {
+    navigation.addListener("focus", () => {
+      setIsPause(false)
+      if(user){
+        setLoading(true);
+        let uuids = user?.following?.concat(user?.uuid)
+        uuids = uuids?.concat(user?.friends)
+        dispatch(fetchUserPosts(uuids, setLoading));
+      }
+    });
+    navigation.addListener('blur', () => {
+      setIsPause(true);
+
+    })
+
+  }, [navigation, user]);
 
   
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  
 
+ 
 
   const fetchPosts = async () => {
-    setLoading(true);
-    await fetchAllPosts((posts) => {
-      setPosts(posts);
-      setLoading(false);
-    });
-    (async () => {
-      let location = await Location.getCurrentPositionAsync({});
-      let coordinates = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-      auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            dispatch(getUserByUUID(user.uid, coordinates, setLoading));
-        }
-      });
-    })();
+    if(user){
+      setLoading(true);
+      let uuids = user?.following?.concat(user?.uuid)
+      uuids = uuids?.concat(user?.friends)
+      dispatch(fetchUserPosts(uuids, setLoading));
+    }
   };
 
  
@@ -115,6 +129,10 @@ const HomeScreen = ({ navigation }) => {
         fetchPosts={fetchPosts}
         user={user}
         loading={loading}
+        isMuted={isMuted}
+        setIsMuted={setIsMuted}
+        isPause={isPause}
+        setIsPause={setIsPause}
       />
     </View>
   );

@@ -34,7 +34,7 @@ export default function Add({ navigation }) {
   const takePicture = async () => {
     if (camera) {
       const data = await camera.takePictureAsync({
-        quality: 1,
+        quality: 0.5,
         base64: true
       });
       setImages([...images, data]);
@@ -50,7 +50,7 @@ export default function Add({ navigation }) {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
-      quality: 1,
+      quality: 0.5,
       allowsMultipleSelection: true,      
     });
 
@@ -71,7 +71,7 @@ export default function Add({ navigation }) {
   const OpenCam = async () => {
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
+      quality: 0.5,
     });
     console.log(result);
 

@@ -8,10 +8,11 @@ import { useSelector } from "react-redux";
 
 
 const AllPosts = (props) => {
-  const user = useSelector((state) => state?.data?.currentUser);
-  const posts = useSelector((state) => state?.data?.posts);
 
-  const { navigation, fetchPosts, loading, header } = props;
+  
+  const user = useSelector((state) => state?.data?.currentUser);
+
+  const { navigation, posts, fetchPosts, loading, header,  isMuted, setIsMuted, isPause,  setIsPause  } = props;
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -60,6 +61,10 @@ const AllPosts = (props) => {
             navigation={navigation}
             currentIndex={currentIndex}
             location={item?.location}
+            isMuted={isMuted}
+            setIsMuted={setIsMuted}
+            isPause={isPause}
+            setIsPause={setIsPause}
           />
         )}
         ListFooterComponent={() => (
@@ -71,7 +76,7 @@ const AllPosts = (props) => {
           height: 200,
         }}
         // initialScrollIndex={props.route.params.index}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         onEndReachedThreshold={0.5}
         onEndReached={() => {
           console.log("end reached");

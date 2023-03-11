@@ -109,21 +109,20 @@ export function getUserByUUID(uuid, location, callback) {
                     let uuids = res.data.user.following.concat(res.data.user.uuid)
                     uuids = uuids.concat(res.data.user.friends)
                     dispatch(fetchUsersStory(res?.data?.user))
-                    // dispatch(fetchUsers(uuids, location))
-                    dispatch(fetchUserPosts(uuids))
+                    dispatch(fetchUsers(uuids, location))
                 }
             })
             .catch((err) => console.log(err))
     })
 }
 
-export function fetchUserPosts(uuids) {
+export function fetchUserPosts(uuids, callback) {
     return (async (dispatch) => {
         await axios.post(`${baseURL}/api/posts/getPosts`, { uuids })
             .then(async (res) => {
                 if (res.data.success) {
-                    
                     dispatch({ type: USER_POSTS_STATE_CHANGE, posts: res.data.posts })
+                    callback(false)
                 }
             })
             .catch((err) => console.log(err))
