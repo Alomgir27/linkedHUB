@@ -72,9 +72,8 @@ const Post = ({
         } else {
           setPlaces(data?.address?.city + ", " + data?.address?.state);
         }
-
       })();
-    }, []);
+    }, [location?.coordinates]);
 
   
     const onLikePress = () => {
@@ -87,10 +86,7 @@ const Post = ({
 
     const onVideoEnd = () => {
       if(nowIndex < downloadURLs?.length - 1) {
-        setInterval(() => {
           setNowIndex(nowIndex + 1);
-        
-        }, 5000);
       }
     }
 
@@ -195,7 +191,7 @@ const Post = ({
             />
             <View style={styles.headerText}>
               <Text style={styles.userName}>{userName || name}</Text>
-              <Text style={styles.location}>{places}</Text>
+              {/* <Text style={styles.location}>{places}</Text> */}
             </View>
           </View>
           <View style={styles.headerRight}>

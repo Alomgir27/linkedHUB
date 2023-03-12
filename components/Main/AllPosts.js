@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { View, Text, RefreshControl } from "react-native";
 import PostCard from "../reusable/PostCard";
 
@@ -12,7 +12,7 @@ const AllPosts = (props) => {
   
   const user = useSelector((state) => state?.data?.currentUser);
 
-  const { navigation, posts, fetchPosts, loading, header,  isMuted, setIsMuted, isPause,  setIsPause  } = props;
+  const { navigation, posts, fetchPosts, loading, header,  isMuted, setIsMuted, isPause,  setIsPause, fetchMore  } = props;
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -26,6 +26,37 @@ const AllPosts = (props) => {
     );
     setCurrentIndex(index);
   };
+
+  const renderItem = ({ item, index }) => {
+    return (
+      <PostCard
+        downloadURLs={(item?.downloadURLs && item?.downloadURLs) || []}
+        index={index}
+        post={item}
+        uuid={item?.uuid}
+        caption={item?.caption}
+        userName={item?.userName}
+        name={item?.name}
+        profilePic={item?.profilePic}
+        savedPost={user?.savedPost}
+        date={item?.updatedAt}
+        likes={item?.likes}
+        comments={item?.comments}
+        user={user}
+        navigation={navigation}
+        currentIndex={currentIndex}
+        location={item?.location}
+        isMuted={isMuted}
+        setIsMuted={setIsMuted}
+        isPause={isPause}
+        setIsPause={setIsPause}
+      />
+    );
+  };
+
+  const renderMemoizedItem = useCallback(renderItem, [currentIndex, isMuted, isPause]);
+
+
 
 
 
@@ -43,30 +74,7 @@ const AllPosts = (props) => {
           <RefreshControl refreshing={loading} onRefresh={() => fetchPosts()} />
         }
         data={posts}
-        renderItem={({ item, index }) => (
-          <PostCard
-            downloadURLs={(item?.downloadURLs && item?.downloadURLs) || []}
-            index={index}
-            post={item}
-            uuid={item?.uuid}
-            caption={item?.caption}
-            userName={item?.userName}
-            name={item?.name}
-            profilePic={item?.profilePic}
-            savedPost={user?.savedPost}
-            date={item?.updatedAt}
-            likes={item?.likes}
-            comments={item?.comments}
-            user={user}
-            navigation={navigation}
-            currentIndex={currentIndex}
-            location={item?.location}
-            isMuted={isMuted}
-            setIsMuted={setIsMuted}
-            isPause={isPause}
-            setIsPause={setIsPause}
-          />
-        )}
+        renderItem={renderMemoizedItem}
         ListFooterComponent={() => (
           <View style={{ height: 1000 }}>
             <Text></Text>
@@ -76,11 +84,9 @@ const AllPosts = (props) => {
           height: 200,
         }}
         // initialScrollIndex={props.route.params.index}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item) => item._id + Math.random()}
         onEndReachedThreshold={0.5}
-        onEndReached={() => {
-          console.log("end reached");
-        }}
+        onEndReached={posts?.length > 0 && posts?.length % 100 === 0 ? fetchMore : null}
         onMomentumScrollEnd={hadleOnMomentumScrollEnd}
       />
     </View>

@@ -22,7 +22,7 @@ export default function VideoPlayer({ onOnePress, onDoublePress, onVideoEnd, vid
 
 
   useEffect(() => {
-    console.log('index', index, 'currentIndex', currentIndex, 'nowIndex', nowIndex, 'index2', index2)
+    // console.log('index', index, 'currentIndex', currentIndex, 'nowIndex', nowIndex, 'index2', index2)
    if(videoRef.current) {
     if(index === currentIndex && index2 === nowIndex) {
       videoRef.current.playAsync();
@@ -130,7 +130,7 @@ export default function VideoPlayer({ onOnePress, onDoublePress, onVideoEnd, vid
         <Pressable onPress={handleButtonPress}>
           <Video
             ref={videoRef}
-            source={{ uri:  'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' }}
+            source={{ uri:  video }}
             rate={1.0}
             volume={volume}
             isMuted={isMuted}
@@ -154,9 +154,9 @@ export default function VideoPlayer({ onOnePress, onDoublePress, onVideoEnd, vid
         </TouchableOpacity>
         {showControls && (
           isPause ? (
-            <MaterialCommunityIcons name="play-circle" size={50} color="white" style={{position: 'absolute', left: width / 2 - 25, top: height * 0.6 / 2 - 25, transition: 'all 0.5s'}} />
+            <MaterialCommunityIcons name="play-circle" size={50} color="white" style={{position: 'absolute', left: width / 2 - 25, top: height * 0.6 / 2 - 25, transition: 'all 0.5s', zIndex: 10000}} />
           ) : (
-            <MaterialCommunityIcons name="pause-circle" size={50} color="white" style={{position: 'absolute', left: width / 2 - 25, top: height * 0.6 / 2 - 25, transition: 'all 0.5s'}} />
+            <MaterialCommunityIcons name="pause-circle" size={50} color="white" style={{position: 'absolute', left: width / 2 - 25, top: height * 0.6 / 2 - 25, transition: 'all 0.5s', zIndex: 10000}} />
           )
         )}
         {<Text style={{position: 'absolute', left: 10, bottom: 10, color: 'white'}}>{moment(status.positionMillis).format('mm:ss') + ' / ' + moment(status.durationMillis).format('mm:ss')}</Text>}
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         elevation: 5,
         opacity: 0.5,
-        zIndex: 1000,
+        zIndex: 2,
         left: 0,
         right: 0,
         top: 0,

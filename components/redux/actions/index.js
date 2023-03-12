@@ -33,7 +33,7 @@ export function clearData() {
     return ((dispatch) => dispatch({ type: CLEAR_DATA }))
 }
 
-export function modifyStoryState(oldStories, newStories, user) {
+export function modifyStoryState(oldStories, newStories, user, callback) {
     return ((dispatch) => {
         newStories.push(...oldStories);
         //make stories remove duplicates
@@ -95,6 +95,7 @@ export function modifyStoryState(oldStories, newStories, user) {
         }
         dispatch({ type: USERS_STORY_STATE_CHANGE, usersStory: stories })
         dispatch({ type: USERS_STORY_BY_UUID_STATE_CHANGE, usersStoryByUUID: storiesByUUID })
+        callback(false)
     })
 }
 
@@ -105,14 +106,11 @@ export function getUserByUUID(uuid, location, callback) {
                 if (res.data.success) {
                     console.log(res.data.user)
                     dispatch({ type: USER_STATE_CHANGE, currentUser: res.data.user })
-                    callback(false)
-                    let uuids = res.data.user.following.concat(res.data.user.uuid)
-                    uuids = uuids.concat(res.data.user.friends)
-                    dispatch(fetchUsersStory(res?.data?.user))
-                    dispatch(fetchUsers(uuids, location))
                 }
             })
             .catch((err) => console.log(err))
+            callback(false)
+
     })
 }
 
@@ -122,27 +120,30 @@ export function fetchUserPosts(uuids, callback) {
             .then(async (res) => {
                 if (res.data.success) {
                     dispatch({ type: USER_POSTS_STATE_CHANGE, posts: res.data.posts })
-                    callback(false)
                 }
             })
             .catch((err) => console.log(err))
+            callback(false)
+
     })
 }
 
-export function fetchUserPostsMore(uuids, lastPost) {
+export function fetchUserPostsMore(uuids, skip, callback) {
     return (async (dispatch) => {
-        await axios.post(`${baseURL}/api/posts/getPostsMore`, { uuids, lastPost })
+        await axios.post(`${baseURL}/api/posts/getPostsMore`, { uuids, skip })
             .then((res) => {
                 if (res.data.success) {
                     dispatch({ type: USER_POSTS_DATA_STATE_CHANGE, posts: res.data.posts })
                 }
             })
             .catch((err) => console.log(err))
+            callback(false)
+
     })
 }
 
 
-export function fetchUsers(uuids, location) {
+export function fetchUsers(uuids, location, callback) {
     return (async (dispatch) => {
         await axios.post(`${baseURL}/api/users/getUsers`, { uuids, location })
             .then((res) => {
@@ -151,10 +152,12 @@ export function fetchUsers(uuids, location) {
                 }
             })
             .catch((err) => console.log(err))
+            callback(false)
+
     })
 }
 
-export function fetchUsersMore(uuids, location, lastUser) {
+export function fetchUsersMore(uuids, location, lastUser, callback) {
     return (async (dispatch) => {
         await axios.post(`${baseURL}/api/users/getUsersMore`, { uuids, location, lastUser })
             .then((res) => {
@@ -163,10 +166,12 @@ export function fetchUsersMore(uuids, location, lastUser) {
                 }
             })
             .catch((err) => console.log(err))
+            callback(false)
+
     })
 }
 
-export function fetchUsersStory(user) {
+export function fetchUsersStory(user, callback) {
     let uuids = user?.following.concat(user?.uuid)
     uuids = uuids.concat(user?.friends)
     return (async (dispatch) => {
@@ -176,26 +181,24 @@ export function fetchUsersStory(user) {
                 if(stories.length > 0) {
                     stories[stories.length - 1].lastStory = true;
                 }
-                dispatch(modifyStoryState([], stories, user))
+                dispatch(modifyStoryState([], stories, user, callback))
               }
             });
+            callback(false)
     })
 }
 
-export function fetchUsersStoryMore(user, lastStory, oldStories) {
+export function fetchUsersStoryMore(user, oldStories, callback) {
     let uuids = user?.following.concat(user?.uuid)
     uuids = uuids.concat(user?.friends)
     return (async (dispatch) => {
-            await axios.post(`${baseURL}/api/stories/getStoriesMore`, { uuids, lastStory }).then((res) => {
+            await axios.post(`${baseURL}/api/stories/getStoriesMore`, { uuids, skip: oldStories?.length }).then((res) => {
               if(res?.data?.success) {
                 let stories = res.data.stories;
-                if(stories.length > 0) {
-                    stories[stories.length - 1].lastStory = true;
-                }
-                dispatch(modifyStoryState(oldStories, stories, user))
-                console.log(oldStories, 'oldStories')
+                dispatch(modifyStoryState(oldStories, stories, user, callback))
               }
             });
+            callback(false)
     })
 }
 

@@ -97,10 +97,34 @@ router.post('/getPosts', (req, res) => {
         }
     Post.find({ uuid: { $in: uuids } })
         .sort({ createdAt: -1 })
-        .limit(20)
+        .limit(100)
         .then(posts => res.json({ posts, success: true }))
         .catch(err => res.status(404).json({ nopostsfound: 'No posts found', success: false }));
 });
+
+
+// @route   POST api/posts/getPostsMore
+// @desc    Get posts by uuids
+// @access  Private
+
+router.post('/getPostsMore', (req, res) => {
+    const { uuids, skip } = req.body;
+
+    if(!uuids) {
+            return res.status(400).json({ uuids: 'uuids are required' });
+        }
+    Post.find({ uuid: { $in: uuids } })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(100)
+        .then(posts => res.json({ posts, success: true }))
+        .catch(err => res.status(404).json({ nopostsfound: 'No posts found', success: false }));
+
+
+   
+});
+
+
 
 // @route   POST api/posts/getPostsByUser
 // @desc    Get posts by uuid
@@ -113,7 +137,7 @@ router.post('/getPostsByUser', (req, res) => {
             }
     Post.find({ uuid: uuid })
         .sort({ createdAt: -1 })
-        .limit(20)
+        .limit(100)
         .then(posts => res.json({ posts, success: true }))
         .catch(err => res.status(404).json({ nopostsfound: 'No posts found', success: false }));
 });

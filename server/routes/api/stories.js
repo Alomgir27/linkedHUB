@@ -57,7 +57,7 @@ router.post('/getStories', async (req, res) => {
         return res.status(400).json({ msg: 'Please enter all fields', success: false });
     }
 
-   Story.find({ uuid: { $in: uuids }, createdAt: { $gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) } }).limit(20)
+   Story.find({ uuid: { $in: uuids }, createdAt: { $gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) } }).limit(100)
         .then(stories => {
             if (!stories) {
                 return res.status(400).json({ msg: 'Stories does not exist', success: false });
@@ -76,14 +76,14 @@ router.post('/getStories', async (req, res) => {
 // @access  Public
 
 router.post('/getStoriesMore', (req, res) => {
-    const { uuids, lastStory } = req.body;
+    const { uuids, skip } = req.body;
     console.log(req.body);
 
     if (!uuids) {
         return res.status(400).json({ msg: 'Please enter all fields', success: false });
     }
 
-    Story.find({ uuid: { $in: uuids }, _id: { $gt: lastStory } })
+    Story.find({ uuid: { $in: uuids } , createdAt: { $gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) } }).skip(skip).limit(10)
         .then(stories => {
             if (!stories) {
                 return res.status(400).json({ msg: 'Stories does not exist', success: false });
@@ -95,6 +95,8 @@ router.post('/getStoriesMore', (req, res) => {
             return res.status(500).json({ msg: 'Internal server error', success: false });
         });
 });
+
+
 
 
 // @route   update api/stories/viewed

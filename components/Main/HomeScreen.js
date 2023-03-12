@@ -6,22 +6,16 @@ import AllPosts from "./AllPosts";
 import { fetchAllPosts, fetchUser } from "../../components/UserFunctions";
 import Stories from "../reusable/Stories";
 
-import { fetchUserPosts } from "../redux/actions";
 import { 
-  USER_POSTS_STATE_CHANGE,
-  USERS_POSTS_DATA_STATE_CHANGE
- } from "../redux/constant";
+  fetchUserPosts,
+  fetchUserPostsMore,
+  fetchUsers 
+ } from "../redux/actions";
 
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { getUserByUUID } from "../redux/actions";
 import * as Location from "expo-location";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-
-import { auth } from "../../firebase";
-
-
-
 
 const HomeScreen = ({ navigation }) => {
 
@@ -29,19 +23,37 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isPause, setIsPause] = useState(false);
+  const [location, setLocation] = useState(null);
   const user = useSelector((state) => state?.data?.currentUser);
   const posts = useSelector((state) => state?.data?.posts);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission to access location was denied");
+        return;
+      }
+      const location = await Location.getCurrentPositionAsync({});
+      const coordinates = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+      setLocation(coordinates);
+    })();
+  }, []);
 
 
   useEffect(() => {
     navigation.addListener("focus", () => {
       setIsPause(false)
       if(user){
-        setLoading(true);
         let uuids = user?.following?.concat(user?.uuid)
         uuids = uuids?.concat(user?.friends)
+        setLoading(true);
         dispatch(fetchUserPosts(uuids, setLoading));
+        dispatch(fetchUsers(uuids, location, setLoading));
       }
     });
     navigation.addListener('blur', () => {
@@ -51,13 +63,9 @@ const HomeScreen = ({ navigation }) => {
 
   }, [navigation, user]);
 
-  
 
-  
 
- 
-
-  const fetchPosts = async () => {
+  const fetchPosts = () => {
     if(user){
       setLoading(true);
       let uuids = user?.following?.concat(user?.uuid)
@@ -65,6 +73,20 @@ const HomeScreen = ({ navigation }) => {
       dispatch(fetchUserPosts(uuids, setLoading));
     }
   };
+
+  const fetchMore = () => {
+    if(user){
+      setLoading(true);
+      let uuids = user?.following?.concat(user?.uuid)
+      uuids = uuids?.concat(user?.friends)
+      dispatch(fetchUserPostsMore(uuids, posts?.length, setLoading));
+    }
+  };
+
+
+
+ 
+      
 
  
   return (
@@ -121,7 +143,7 @@ const HomeScreen = ({ navigation }) => {
       <AllPosts
         header={
           <View>
-            <Stories navigation={navigation} />
+            <Stories navigation={navigation}  />
           </View>
         }
         navigation={navigation}
@@ -133,6 +155,7 @@ const HomeScreen = ({ navigation }) => {
         setIsMuted={setIsMuted}
         isPause={isPause}
         setIsPause={setIsPause}
+        fetchMore={fetchMore}
       />
     </View>
   );

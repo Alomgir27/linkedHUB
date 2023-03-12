@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Alert } from "react-native";
+import { Alert, LogBox } from "react-native";
 
 //navigation
 import { NavigationContainer } from "@react-navigation/native";
@@ -39,7 +39,7 @@ import { useDispatch } from "react-redux";
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 
-
+LogBox.ignoreLogs(["Possible Unhandled Promise Rejection"]);
 
 
 const Stack = createNativeStackNavigator();

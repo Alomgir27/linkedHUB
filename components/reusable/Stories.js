@@ -6,11 +6,14 @@ import { Colors, IconButton } from "react-native-paper";
 import dynamicStyles from "./styles";
 import { useSelector } from "react-redux";
 
-import {
-  fetchUsersStoryMore
-} from "../redux/actions";
+import { RefreshControl } from "react-native";
 
 import { useDispatch } from "react-redux";
+
+import { 
+  fetchUsersStory,
+  fetchUsersStoryMore
+  } from "../redux/actions";
 
 
 const HeaderComponent = ({user, text, navigation}) => {
@@ -49,14 +52,42 @@ const HeaderComponent = ({user, text, navigation}) => {
 const Stories = (props) => {
   const styles = dynamicStyles();
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const [oldStories, setOldStories] = useState([]);
+
   const user = useSelector(state => state?.data?.currentUser);
   const stories = useSelector(state => state?.data?.usersStory);
   const storiesByUUID = useSelector(state => state?.data?.usersStoryByUUID);
 
+  useEffect(() => {
+    props.navigation.addListener("focus", () => {
+      if(user){
+        dispatch(fetchUsersStory(user, setLoading));
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if(storiesByUUID){
+      let oldStories = [];
+      Object.keys(storiesByUUID).forEach((key) => {
+        oldStories = [...oldStories, ...storiesByUUID[key]];
+      });
+      setOldStories(oldStories);
+    }
+  }, [storiesByUUID]);
+
+  const fetchMoreStories = async () => {
+    if(user){
+      setLoading(true);
+      dispatch(fetchUsersStoryMore(user, oldStories, setLoading));
+    }
+  };
+
+  
  
   const onStoryPress = (story) => {
     props.navigation.navigate("StoryViewer", { stories: storiesByUUID[story.uuid] });
-    
   };
 
 
@@ -95,30 +126,21 @@ const Stories = (props) => {
     <View>
       <FlatList
         horizontal
+        showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={loading && stories?.length === 0} onRefresh={fetchMoreStories} />
+        }
         data={stories && stories.length > 0 ? stories : []}
         ListHeaderComponent={() => (
           <HeaderComponent user={user} text="Your story" {...props} />
         )}
         renderItem={(item) => renderItem(item)}
         keyExtractor={(item) => item._id}
-        onEndReached={() => {
-          if (stories.length > 0) {
-            let lastStory
-            let oldStories = []
-            for(let key in storiesByUUID){
-              storiesByUUID[key].forEach((story) => {
-                if(story?.lastStory){
-                  lastStory = story
-                  story.lastStory = false
-                }
-                oldStories.push(story)
-              })
-            }
-            dispatch(fetchUsersStoryMore(user, lastStory, oldStories));
-          }
-        }}
+        onEndReached={oldStories?.length > 0 && oldStories?.length % 100 === 0 ? fetchMoreStories : null}
         onEndReachedThreshold={0.5}
+        onMomentumScrollBegin={() => { setLoading(false) }}
+
 
       />
     </View>
