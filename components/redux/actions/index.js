@@ -106,10 +106,10 @@ export function getUserByUUID(uuid, location, callback) {
                 if (res.data.success) {
                     console.log(res.data.user)
                     dispatch({ type: USER_STATE_CHANGE, currentUser: res.data.user })
+                    callback(false)
                 }
             })
             .catch((err) => console.log(err))
-            callback(false)
 
     })
 }

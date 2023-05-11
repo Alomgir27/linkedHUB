@@ -1,56 +1,26 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Text, Pressable, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Pressable, TouchableOpacity, Dimensions, TouchableWithoutFeedback, Alert } from 'react-native';
+import { StatusBar } from 'react-native';
 import { Video } from 'expo-av';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import moment from 'moment';
 
+
 const { width, height } = Dimensions.get('window');
 
-export default function VideoPlayer({ onOnePress, onDoublePress, onVideoEnd, video, index, currentIndex, nowIndex, index2, isMuted, setIsMuted, isPause, setIsPause }) {
+export default function VideoPlayer({  video, index, isPlay, nowIndex, onDoublePress }) {
   const [status, setStatus] = useState({});
-  const [volume, setVolume] = useState(1.0);
   const [showControls, setShowControls] = useState(false);
-
-  const videoRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
 
   const [lastPress, setLastPress] = useState(0);
   const [timer, setTimer] = useState(null);
   const [firstPress, setFirstPress] = useState(true);
 
-
-
-  useEffect(() => {
-    // console.log('index', index, 'currentIndex', currentIndex, 'nowIndex', nowIndex, 'index2', index2)
-   if(videoRef.current) {
-    if(index === currentIndex && index2 === nowIndex) {
-      videoRef.current.playAsync();
-      setIsPause(false);
-    } else {
-      videoRef.current.pauseAsync();
-      setIsPause(true);
-    }
-    }
-  }, [currentIndex, index, videoRef, nowIndex, index2])
-
-  useEffect(() => {
-    if(isPause && index === currentIndex && index2 === nowIndex) {
-      setShowControls(true);
-      setTimeout(() => {
-        setShowControls(false);
-      }, 2000);
-      if(videoRef.current) {
-        videoRef.current.pauseAsync();
-      }
-    } else if(!isPause && index === currentIndex && index2 === nowIndex) {
-      if(videoRef.current) {
-        videoRef.current.playAsync();
-      }
-    }
-  }, [isPause])
-
-
+  const videoRef = useRef(null);
 
 
   useEffect(() => {
@@ -63,6 +33,62 @@ export default function VideoPlayer({ onOnePress, onDoublePress, onVideoEnd, vid
 
   
 
+ useEffect(() => {
+    //if video is ended, set isPlaying to false
+    if (status.didJustFinish) {
+      setIsPlaying(false);
+      if(videoRef.current) {
+        //set video to start
+        videoRef.current.setPositionAsync(0);
+      }
+    }
+  }, [status?.didJustFinish]);
+
+ useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.getStatusAsync().then((playbackStatus) => {
+        setStatus(playbackStatus);
+      });
+    }
+  }, [videoRef.current]);
+
+useEffect(() => {
+    if (videoRef.current) {
+      if(isMuted) {
+        videoRef.current.setIsMutedAsync(true);
+      } else {
+        videoRef.current.setIsMutedAsync(false);
+      }
+    }
+  }, [isMuted]);
+  
+
+  const showControlsTimeout = () => {
+    setShowControls(true);
+    setTimeout(() => {
+      setShowControls(false);
+    }, 3000);
+  };
+
+
+
+  const togglePlayPause = () => {
+    if(isPlaying) {
+      setIsPlaying(false);
+    } else {
+      setIsPlaying(true);
+    }
+  };
+
+
+  const toggleMute = () => {
+    if(isMuted) {
+      setIsMuted(false);
+    } else {
+      setIsMuted(true);
+    }
+  };
+
   const handleButtonPress = useCallback(() => {
     const delta = new Date().getTime()
     const doublePressDelay = 300;
@@ -71,55 +97,26 @@ export default function VideoPlayer({ onOnePress, onDoublePress, onVideoEnd, vid
         setTimer(setTimeout(() => {
             setFirstPress(true);
             setTimer(null);
-            onOnePress ? onOnePress() : togglePlayPause();
+            showControlsTimeout();
         }, doublePressDelay));
         setLastPress(delta);
     } else {
         if(delta - lastPress < doublePressDelay) {
             clearTimeout(timer);
             setFirstPress(true);
-            onDoublePress ? onDoublePress() : toggleFullscreen();
+            setTimer(null);
+            onDoublePress && onDoublePress();
         }
     }
-    }, [lastPress, timer, firstPress, onOnePress, onDoublePress]);
+    }, [lastPress, timer, firstPress]);
 
- 
 
-  const togglePlayPause = async () => {
-    const { isPlaying } = status;
+
+  const onReadyForDisplay = () => {
     if (videoRef.current) {
-      if (isPlaying) {
-        await videoRef.current.pauseAsync();
-      } else {
-        await videoRef.current.playAsync();
-      }
-      setStatus(prevStatus => ({ ...prevStatus, isPlaying: !isPlaying }));
-    }
-  };
-
-  const toggleMute = () => {
-    setIsMuted(prevIsMuted => !prevIsMuted);
-  };
-
-  const onPlaybackStatusUpdate = playbackStatus => {
-    setStatus(prevStatus => ({
-      ...prevStatus,
-      positionMillis: playbackStatus.positionMillis,
-      durationMillis: playbackStatus.durationMillis,
-      isPlaying: playbackStatus.isPlaying,
-      isBuffering: playbackStatus.isBuffering,
-      isLooping: playbackStatus.isLooping,
-      didJustFinish: playbackStatus.didJustFinish,
-    }));
-
-    if (playbackStatus.didJustFinish) {
-      onVideoEnd ? onVideoEnd() : null;
-    }
-  };
-
-  const toggleFullscreen = () => {
-    if (videoRef.current) {
-      videoRef.current.presentFullscreenPlayer();
+      videoRef.current.getStatusAsync().then((playbackStatus) => {
+        setStatus(playbackStatus);
+      });
     }
   };
 
@@ -127,39 +124,36 @@ export default function VideoPlayer({ onOnePress, onDoublePress, onVideoEnd, vid
 
   return (
     <View style={styles.container}>
-        <Pressable onPress={handleButtonPress}>
-          <Video
+      <TouchableWithoutFeedback onPress={handleButtonPress}>
+        <Video
             ref={videoRef}
             source={{ uri:  video }}
             rate={1.0}
-            volume={volume}
+            volume={1.0}
             isMuted={isMuted}
             resizeMode="cover"
-            shouldPlay={index === currentIndex && index2 === nowIndex && !isPause}
             useNativeControls={false}
-            onPlaybackStatusUpdate={onPlaybackStatusUpdate}
             style={styles.videoPlayer}
-            paused={index !== currentIndex && index2 !== nowIndex}
-
+            shouldPlay={isPlaying && isPlay && index === nowIndex}
+            onReadyForDisplay={onReadyForDisplay}
+            isLooping={false}
+            onPlaybackStatusUpdate={(status) => setStatus(() => status)}
           />
-        </Pressable>
-        {status.isBuffering && (
-            <View style={{ position: 'absolute', left: width / 2 - 50, top: height * 0.5 / 2 - 10, transition: 'all 0.5s', opacity: 0.5}}>
-               <Text style={styles.isBuffering} />
-           </View>
-         )}
-
-        <TouchableOpacity onPress={toggleMute} style={styles.playPauseButton}>
-            <MaterialIcons name={isMuted ? 'volume-off' : 'volume-up'} size={24} color="white" />
-        </TouchableOpacity>
+      </TouchableWithoutFeedback> 
         {showControls && (
-          isPause ? (
-            <MaterialCommunityIcons name="play-circle" size={50} color="white" style={{position: 'absolute', left: width / 2 - 25, top: height * 0.6 / 2 - 25, transition: 'all 0.5s', zIndex: 10000}} />
-          ) : (
-            <MaterialCommunityIcons name="pause-circle" size={50} color="white" style={{position: 'absolute', left: width / 2 - 25, top: height * 0.6 / 2 - 25, transition: 'all 0.5s', zIndex: 10000}} />
-          )
-        )}
-        {<Text style={{position: 'absolute', left: 10, bottom: 10, color: 'white'}}>{moment(status.positionMillis).format('mm:ss') + ' / ' + moment(status.durationMillis).format('mm:ss')}</Text>}
+           <View style={{ position: 'absolute', left: width / 2 - 50, top: height * 0.5 / 2 - 10, transition: 'all 0.5s', opacity: 0.5}}>
+               <View style={styles.isBuffering} />
+            </View>
+         )}
+        <TouchableOpacity onPress={toggleMute} style={styles.playPauseButton}>
+              <MaterialIcons name={isMuted ? 'volume-off' : 'volume-up'} size={24} color="white" />
+          </TouchableOpacity>
+          {showControls && (
+            <TouchableOpacity onPress={togglePlayPause} style={styles.playButton}>
+              <MaterialIcons name={isPlaying ? 'pause' : 'play-arrow'} size={30} color="white" />
+            </TouchableOpacity>
+          )}
+
     </View>
   );
 }
@@ -172,7 +166,7 @@ const styles = StyleSheet.create({
     },
     videoPlayer: {
         width: width,
-        height: height * 0.6,
+        height: height + StatusBar.currentHeight,
         resizeMode: 'cover',
     },
     playPauseButton: {
@@ -210,6 +204,24 @@ const styles = StyleSheet.create({
         height: 100
         
     },
+    playButton: {
+        position: 'absolute',
+        backgroundColor: 'transparent',
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        left: width / 2 - 25,
+        top: height * 0.6 / 2 - 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    videoContainer: {
+        flex: 1,
+        backgroundColor: 'transparent',
+        justifyContent: 'center',
+    },
+
+    
 
 });
 

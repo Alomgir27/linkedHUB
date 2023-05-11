@@ -11,7 +11,7 @@ import { View } from "react-native";
 import ShortVideo from "./Main/ShortVideo";
 import { ActivityIndicator } from "react-native-paper";
 import { useSelector } from "react-redux";
-import { TouchableOpacity } from "react-native";
+import { TouchableWithoutFeedback } from "react-native";
 
 //bottom tab navigation
 import {
@@ -101,7 +101,7 @@ const Main = ({ navigation }) => {
             
             }}
             >
-              <TouchableOpacity
+              <TouchableWithoutFeedback
               onPress={() => navigation.navigate("Profile")}
               >
               <Image
@@ -114,7 +114,7 @@ const Main = ({ navigation }) => {
                   borderColor: "#fff",
                 }}
               />
-              </TouchableOpacity>
+              </TouchableWithoutFeedback>
             </LinearGradient>
           );
         }

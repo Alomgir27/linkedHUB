@@ -6,7 +6,7 @@ import { MaterialCommunityIcons } from 'react-native-vector-icons';
 
 
 const FullScreenStory = ({ navigation, route }) => {
-  const { story } = route.params;
+  const { image } = route.params;
 
 
   return (
@@ -20,7 +20,7 @@ const FullScreenStory = ({ navigation, route }) => {
         </View>
 
       <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Image style={styles.image} source={{ uri: story?.image }} />
+        <Image style={styles.image} source={{ uri: image?.image }} />
       </TouchableOpacity>
     </View>
   );

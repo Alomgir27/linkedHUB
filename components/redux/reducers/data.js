@@ -24,7 +24,8 @@ import {
     USER_FRIENDS_DATA_STATE_CHANGE,
     USERS_STORY_BY_UUID_STATE_CHANGE,
     USERS_STORY_BY_UUID_DATA_STATE_CHANGE,
-    CLEAR_DATA
+    CLEAR_DATA,
+    UPDATE_POSTS
 } from '../constant/index'
 
 const initialState = {
@@ -59,6 +60,17 @@ export default function data(state = initialState, action) {
             return {
                 ...state,
                 posts: [...state.posts, ...action.posts]
+            }
+        case UPDATE_POSTS:
+            return {
+                ...state,
+                posts: (state.posts.map((post) => {
+                    if (post._id === action.post._id) {
+                        return action.post
+                    } else {
+                        return post
+                    }
+                }))
             }
         case USER_FOLLOWING_STATE_CHANGE:
             return {

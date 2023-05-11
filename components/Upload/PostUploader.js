@@ -20,6 +20,7 @@ export default function Add({ navigation }) {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flesh, setFlesh] = useState(Camera.Constants.FlashMode.off);
   const [images, setImages] = useState([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -32,6 +33,7 @@ export default function Add({ navigation }) {
   }, []);
 
   const takePicture = async () => {
+    setIsLoaded(true);
     if (camera) {
       const data = await camera.takePictureAsync({
         quality: 0.5,
@@ -42,6 +44,7 @@ export default function Add({ navigation }) {
   };
 
   const pickImage = async () => {
+    setIsLoaded(true);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permission denied', 'You need to grant access to your camera roll to upload images.');
@@ -69,6 +72,7 @@ export default function Add({ navigation }) {
   };
 
   const OpenCam = async () => {
+    setIsLoaded(true);
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.5,
@@ -96,7 +100,7 @@ export default function Add({ navigation }) {
   }
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      {!images.length && (
+      {!isLoaded && (
         <MaterialCommunityIcons
           name="close"
           size={30}
@@ -109,7 +113,7 @@ export default function Add({ navigation }) {
         />
       )}
       <View style={styles.Camcontainer}>
-        {!images.length ? (
+        {!isLoaded ? (
           <Camera
             flashMode={flesh}
             ref={(ref) => setCamera(ref)}
@@ -139,7 +143,7 @@ export default function Add({ navigation }) {
             <IconButton
               icon="close"
               color="#fff"
-              onPress={() => setImages([])}
+              onPress={() => { setImages([]); setIsLoaded(false); }}
               size={30}
               style={{
                 position: "absolute",
@@ -158,7 +162,7 @@ export default function Add({ navigation }) {
           </View>
         )}
       </View>
-      {!images.length ? (
+      {!isLoaded ? (
         <TouchableOpacity onPress={takePicture}>
           <MaterialCommunityIcons
             name="circle-slice-8"

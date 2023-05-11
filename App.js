@@ -10,7 +10,7 @@ import { createStore, applyMiddleware } from "redux";
 import rootReducer from "./components/redux/reducers";
 import thunk from "redux-thunk";
 import 'react-native-gesture-handler';
-
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 
 
@@ -34,12 +34,14 @@ const store = createStore(rootReducer, applyMiddleware(thunk));
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Provider store={store}>
-        <PaperProvider theme={theme}>
-          <Navigation style={styles.droidSafeArea} />
-          <StatusBar style="dark" />
-        </PaperProvider>
-      </Provider>
+      <BottomSheetModalProvider>
+        <Provider store={store}>
+          <PaperProvider theme={theme}>
+            <Navigation style={styles.droidSafeArea} />
+            <StatusBar style="dark" />
+          </PaperProvider>
+        </Provider>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }

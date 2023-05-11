@@ -12,10 +12,9 @@ const Tab = createMaterialTopTabNavigator();
 export default function MainTab({ navigation }) {
   return (
     <View style={{ backgroundColor: "#fff", flex: 1 }}>
-      <Tab.Navigator tabBar={() => {}} initialRouteName="HomeScreen">
-        <Tab.Screen name="HomeScreen" component={HomeScreen} navigation={navigation} />
-        <Tab.Screen name="ChatScreen" component={ChatList} navigation={navigation} />
-      </Tab.Navigator>
+        {/* <Tab.Screen name="HomeScreen" component={HomeScreen} navigation={navigation} />
+        <Tab.Screen name="ChatScreen" component={ChatList} navigation={navigation} /> */}
+        <HomeScreen navigation={navigation} />
     </View>
   );
 }

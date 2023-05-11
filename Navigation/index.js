@@ -27,7 +27,7 @@ import Chat from "../components/chat/Chat";
 
 import UnderConstruction from "../components/reusable/UnderConstruction";
 import UserStoriesScreen from "../components/reusable/UserStoriesScreen";
-import FullScreenStory from "../components/reusable/FullScreenStory";
+import FullScreenImage from "../components/reusable/FullScreenImage";
 
 
 import StoryFileUploader from "../components/Upload/StoryFileUploader";
@@ -294,7 +294,7 @@ export default function NavigationStack({ navigation }) {
         />
         <Stack.Screen
           name="FullScreenPicture"
-          component={FullScreenStory}
+          component={FullScreenImage}
           navigation={navigation}
           options={{
             headerShown: false,

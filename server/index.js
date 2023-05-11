@@ -7,6 +7,7 @@ const cors = require('cors');
 const users = require('./routes/api/users');
 const posts = require('./routes/api/posts');
 const stories = require('./routes/api/stories');
+const comments = require('./routes/api/comments');
 
 const app = express();
 
@@ -34,6 +35,8 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
 app.use('/api/users', users);
 app.use('/api/posts', posts);
 app.use('/api/stories', stories);
+app.use('/api/comments', comments);
+
 
 //Allow access Post, Put, Delete and Patch
 app.use(function (req, res, next) {

@@ -69,8 +69,7 @@ export default function StoryFileUploader({ navigation }) {
               oldStories.push(story)
             })
           }
-          dispatch(modifyStoryState(oldStories, newStories, user));
-          setUploading(false);
+          dispatch(modifyStoryState(oldStories, newStories, user, setUploading))
           navigation.goBack();
           
         })

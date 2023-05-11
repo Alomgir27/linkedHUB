@@ -21,8 +21,6 @@ const HomeScreen = ({ navigation }) => {
 
 
   const [loading, setLoading] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const [isPause, setIsPause] = useState(false);
   const [location, setLocation] = useState(null);
   const user = useSelector((state) => state?.data?.currentUser);
   const posts = useSelector((state) => state?.data?.posts);
@@ -47,7 +45,6 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     navigation.addListener("focus", () => {
-      setIsPause(false)
       if(user){
         let uuids = user?.following?.concat(user?.uuid)
         uuids = uuids?.concat(user?.friends)
@@ -56,10 +53,7 @@ const HomeScreen = ({ navigation }) => {
         dispatch(fetchUsers(uuids, location, setLoading));
       }
     });
-    navigation.addListener('blur', () => {
-      setIsPause(true);
-
-    })
+  
 
   }, [navigation, user]);
 
@@ -151,10 +145,6 @@ const HomeScreen = ({ navigation }) => {
         fetchPosts={fetchPosts}
         user={user}
         loading={loading}
-        isMuted={isMuted}
-        setIsMuted={setIsMuted}
-        isPause={isPause}
-        setIsPause={setIsPause}
         fetchMore={fetchMore}
       />
     </View>

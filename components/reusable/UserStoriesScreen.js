@@ -21,12 +21,7 @@ import { useSelector } from 'react-redux';
 
 import LottieView from 'lottie-react-native';
 
-import {
-    BottomSheetModal,
-    BottomSheetModalProvider,
-    BottomSheetBackdrop,
-} from '@gorhom/bottom-sheet';
-import { FlatList } from 'react-native-gesture-handler';
+import BottomSheet from './BottomSheet';
 
 
 
@@ -45,6 +40,13 @@ const StoryViewer = ({route,  navigation }) => {
   const [lastTap, setLastTap] = useState(null);
   const [likedBy, setLikedBy] = useState([]);
 
+  const [lastPress, setLastPress] = useState(0);
+  const [timer, setTimer] = useState(null);
+  const [firstPress, setFirstPress] = useState(true);
+
+;
+
+
 
   const [users, setUsers] = useState([]);
 
@@ -58,6 +60,14 @@ const StoryViewer = ({route,  navigation }) => {
     }
   }, [stories]);
 
+  
+  useEffect(() => {
+    return () => {
+        if (timer) {
+            clearTimeout(timer);
+        }
+    };
+    }, [timer])
  
 
 
@@ -188,22 +198,36 @@ const StoryViewer = ({route,  navigation }) => {
     }
   };
 
-  const handleStoryPress = () => {
-    if(!stories) return;
+  const onDoublePress = () => {
+    handleLove();
+  }
 
-    const now = Date.now();
-    const DOUBLE_PRESS_DELAY = 300;
-    if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
-      handleLove();
-      setLastTap(null);
-    } else {
-      setLastTap(now);
-      setTimeout(() => {
-        setLastTap(null);
-      }, DOUBLE_PRESS_DELAY);
-    }
+  const onOnePress = () => {
+    navigation.navigate('FullScreenPicture',  { image : stories[currentStoryIndex], isStory: true });
+  }
 
-  };
+   
+
+  
+const handleButtonPress = useCallback(() => {
+  const delta = new Date().getTime()
+  const doublePressDelay = 300;
+  if(firstPress) {
+      setFirstPress(false);
+      setTimer(setTimeout(() => {
+          setFirstPress(true);
+          setTimer(null);
+          onOnePress()
+      }, doublePressDelay));
+      setLastPress(delta);
+  } else {
+      if(delta - lastPress < doublePressDelay) {
+          clearTimeout(timer);
+          setFirstPress(true);
+           onDoublePress()
+      }
+  }
+  }, [lastPress, timer, firstPress, onOnePress, onDoublePress]);
 
 
   const handlePresentModalPress = useCallback(() => {
@@ -212,6 +236,7 @@ const StoryViewer = ({route,  navigation }) => {
     (async () => {
       await axios.post(`${baseURL}/api/users/getUsersByUUIDs`, {
         uuids: likedBy,
+
       })
       .then((res) => {
         setUsers(res?.data?.users);
@@ -222,6 +247,19 @@ const StoryViewer = ({route,  navigation }) => {
     })();
   }, [likedBy]);
 
+  const fetchUsers = async () => {
+    await axios.post(`${baseURL}/api/users/getUsersMoreByUUIDs`, {
+      uuids: likedBy,
+      lastUser: users[users.length - 1],
+    })
+    .then((res) => {
+      setUsers([...users, ...res?.data?.users]);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  }
+
   const handleSheetChanges = useCallback((index) => {
     console.log('handleSheetChanges', index);
     if(index === -1) {
@@ -230,13 +268,6 @@ const StoryViewer = ({route,  navigation }) => {
   }, []);
 
  
-
-  
-
-  
-
-  const snapPoints = useMemo(() => ['25%', '50%', '75%', '100%'], []);
-
   const lovedCount = (length) => {
     if(length === 0) {
       return ""
@@ -254,7 +285,6 @@ const StoryViewer = ({route,  navigation }) => {
   }
 
   return (
-    <BottomSheetModalProvider>
       <SafeAreaView style={styles.container}>
           <View style={styles.storyHeaderContainer}>
               <View style={{ flexDirection: 'row' }}>
@@ -274,7 +304,7 @@ const StoryViewer = ({route,  navigation }) => {
               </View>
           </View>
           
-        <TouchableOpacity onPress={handleStoryPress} activeOpacity={1} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <TouchableOpacity onPress={handleButtonPress} activeOpacity={1} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
               <Image style={styles.image} source={{ uri: stories[currentStoryIndex]?.image }}  />
           </TouchableOpacity>
 
@@ -325,35 +355,18 @@ const StoryViewer = ({route,  navigation }) => {
                   </ScrollView>
               </View>
           </View>
+          <BottomSheet
+              title="Loved by"
+              bottomSheetModalRef={bottomSheetModalRef}
+              users={users}
+              handleSheetChanges={handleSheetChanges}
+              handlePresentModalPress={handlePresentModalPress}
+              navigation={navigation}
+              fetchUsers={fetchUsers}
+            />
 
-          <BottomSheetModal
-              ref={bottomSheetModalRef}
-              index={1}
-              snapPoints={snapPoints}
-              onChange={handleSheetChanges}
-          >
-              <View style={{ backgroundColor: 'white', padding: 16, height: 450 }}>
-                    <FlatList
-                        data={users}
-                        keyExtractor={(item) => item._id}
-                        renderItem={({ item }) => (
-                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                                <Image source={{ uri: item?.profilePic }} style={styles.storyImage} />
-                                <View style={{ flex: 1, justifyContent: 'center', position: 'absolute', right: 0, alignItems: 'center', flexDirection: 'row' }}>
-                                    <MaterialCommunityIcons name="heart" size={20} color="red" />
-                                </View>
-                                <View style={{ marginLeft: 10 }}>
-                                   <Text style={{ color: 'black', fontWeight: 'bold', marginLeft: 10 }}>{item?.name}</Text>
-                                   <Text style={{ color: 'gray', fontSize: 12, marginLeft: 10 }}>{item?.userName ? `@${item?.userName}` : ""}</Text>
-                                </View>
-                            </View>
-                        )}
-                    />
-              </View>
-          </BottomSheetModal>
+         
       </SafeAreaView> 
-    </BottomSheetModalProvider>
-
     );
 };
 
@@ -412,7 +425,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 10,
-    zIndex: 100,
+    zIndex: 1,
     },
     storyHeaderImage: {
     width: 40,
@@ -447,6 +460,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     },
+    seeAllUsersButtonWhoLoved: {
+    bottom: 10,
+    left: 0,
+    right: 0,
+    },
+
 
     
 });

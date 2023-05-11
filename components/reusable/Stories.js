@@ -59,6 +59,7 @@ const Stories = (props) => {
   const stories = useSelector(state => state?.data?.usersStory);
   const storiesByUUID = useSelector(state => state?.data?.usersStoryByUUID);
 
+
   useEffect(() => {
     props.navigation.addListener("focus", () => {
       if(user){
@@ -140,8 +141,6 @@ const Stories = (props) => {
         onEndReached={oldStories?.length > 0 && oldStories?.length % 100 === 0 ? fetchMoreStories : null}
         onEndReachedThreshold={0.5}
         onMomentumScrollBegin={() => { setLoading(false) }}
-
-
       />
     </View>
   );

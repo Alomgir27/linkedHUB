@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, Image, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, Image, Text, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { Icon } from 'react-native-elements';
 import Swiper from 'react-native-swiper';
 import { IconButton } from 'react-native-paper';  
@@ -7,33 +7,32 @@ import { Feather } from '@expo/vector-icons';
 import VideoPlayerScreen from './VideoPlayerScreen';
 import moment from 'moment';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Pressable } from 'react-native';
 
 import LottieView from 'lottie-react-native';
 
 const { width, height } = Dimensions.get('window');
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+
+import BottomSheet from './BottomSheet';
+import BottomSheetComment from './CommentBottomSheet';
+
+import axios from 'axios';
+
+import { baseURL } from '../config/baseURL';
 
 const Post = ({
   downloadURLs,
-  index,
   post,
-  uuid,
   caption,
   userName,
   name,
   profilePic,
-  savedPost,
   date,
-  likes,
-  comments,
   user,
   navigation,
-  currentIndex,
   location,
-  isMuted, 
-  setIsMuted,
-  isPause,  
-   setIsPause
+  isPlay
 }) => {
     const [liked, setLiked] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -42,10 +41,31 @@ const Post = ({
     
     const [showBottom, setShowBottom] = useState(false);
     const [showLottie, setShowLottie] = useState(false);
+    const [likes, setLikes] = useState(post?.likes);
+    const [users, setUsers] = useState([]);
+
+    const [videoPlaying, setVideoPlaying] = useState(true);
+
+    
 
     const [lastPress, setLastPress] = useState(0);
     const [timer, setTimer] = useState(null);
     const [firstPress, setFirstPress] = useState(true);
+
+    const dispatch = useDispatch();
+
+
+
+    const bottomSheetModalRef = React.useRef(null);
+    const bottomSheetModalRefComment = React.useRef(null);
+
+    useEffect(() => {
+      if(likes?.includes(user?.uuid)) {
+        setLiked(true);
+      } else {
+        setLiked(false);
+      }
+    }, [likes]);
   
 
     useEffect(() => {
@@ -69,8 +89,14 @@ const Post = ({
         const data = await response.json();
         if(data?.address?.city_district) {
           setPlaces(data?.address?.city_district + ", " + data?.address?.state);
-        } else {
+        } else if(data?.address?.city){
           setPlaces(data?.address?.city + ", " + data?.address?.state);
+        }
+        else if(data?.address?.state) {
+          setPlaces(data?.address?.state);
+        }
+        else {
+          setPlaces("Unknown");
         }
       })();
     }, [location?.coordinates]);
@@ -84,22 +110,95 @@ const Post = ({
       setSaved(!saved);
     };
 
-    const onVideoEnd = () => {
-      if(nowIndex < downloadURLs?.length - 1) {
-          setNowIndex(nowIndex + 1);
-      }
+    const handlePresentModalPress = useCallback(() => {
+      bottomSheetModalRef.current?.present();
+      setVideoPlaying(false);
+      (async () => {
+        await axios.post(`${baseURL}/api/users/getUsersByUUIDs`, {
+          uuids: likes
+        })
+        .then((res) => {
+          setUsers(res?.data?.users);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      })();
+    }, [likes]);
+
+    const fetchUsers = async () => {
+      await axios.post(`${baseURL}/api/users/getUsersMoreByUUIDs`, {
+        uuids: likes,
+        lastUser: users[users.length - 1],
+      })
+      .then((res) => {
+        setUsers([...users, ...res?.data?.users]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     }
 
-    const onOnePress = () => {
-      setIsPause(!isPause);
-    }
-    const onDoublePress = () => {
+    const handlePresentModalPressComment = useCallback(() => {
+      bottomSheetModalRefComment.current?.present();
+      setVideoPlaying(false);
+    }, []);
+
+    const handleSheetChanges = useCallback((index) => {
+      console.log('handleSheetChanges', index);
+      if(index === -1) {
+        console.log("Sheet Closed");
+        setVideoPlaying(true);
+      }
+    }, []);
+
+    const handleSheetChangesComment = useCallback((index) => {
+      console.log('handleCommentSheetChanges', index);
+      if(index === -1) {
+        console.log("Comment Sheet Closed");
+        setVideoPlaying(true);
+        
+      }
+    }, []);
+   
+
+ 
+    const onDoublePress = async () => {
       setShowBottom(true);
 
       if(liked) {
         setLiked(false);
+        await axios.post(`${baseURL}/api/posts/unlikePost`, {
+          postId : post?._id,
+          uuid : user?.uuid
+        })
+        .then((res) => {
+          console.log(res.data);
+          const { post } = res.data;
+          console.log(post);
+          dispatch({ type : 'UPDATE_POST', post : post });
+          setLikes(post?.likes);
+
+        })
+        .catch((err) => {
+          console.log(err);
+        })
       } else {
         setLiked(true);
+        await axios.post(`${baseURL}/api/posts/likePost`, {
+          postId : post?._id,
+          uuid : user?.uuid
+        })
+        .then((res) => {
+          console.log(res.data);
+          const { post } = res.data;
+          console.log(post);
+          dispatch({ type : 'UPDATE_POST', post : post });
+          setLikes(post?.likes);
+        })
+        .catch((err) => {
+          console.log(err);
+        })
       }
 
       setShowLottie(true);
@@ -107,6 +206,10 @@ const Post = ({
         setShowLottie(false);
       }, 1000);
 
+    }
+
+    const onOnePress = () => {
+      setShowBottom(!showBottom);
     }
 
      
@@ -135,7 +238,7 @@ const Post = ({
    
 
   
-    const renderMedia = useCallback(() => (
+    const renderMedia = () => (
       <Swiper style={styles.wrapper} showsButtons={false} loop={false} onIndexChanged={(index) => setNowIndex(index)} showsPagination={false} index={nowIndex}>
         {downloadURLs?.map((media, index2) => {
           if (media.type === "image") {
@@ -157,18 +260,10 @@ const Post = ({
                 <VideoPlayerScreen
                   key={index2}
                   video={media.downloadURL}
-                  currentIndex={currentIndex}
-                  index={index}
+                  index={index2}
                   nowIndex={nowIndex}
-                  index2={index2}
-                  isMuted={isMuted}
-                  setIsMuted={setIsMuted}
-                  onVideoEnd={onVideoEnd}
+                  isPlay={videoPlaying && isPlay}
                   onDoublePress={onDoublePress}
-                  onOnePress={onOnePress}
-                  isPause={isPause}
-                  setIsPause={setIsPause}
-                  
                 />
                  <View style={{ position : 'absolute', top : 20, right : 10, backgroundColor : 'white', padding : 5, borderRadius : 5, flexDirection : 'row', alignItems : 'center' }}>
                     <Text style={{ fontSize : 12, color : 'black' }}>{nowIndex + 1}/{downloadURLs?.length}</Text>
@@ -178,10 +273,11 @@ const Post = ({
           }
         })}
       </Swiper>
-    ), [downloadURLs, currentIndex, index, nowIndex, isMuted, setIsMuted, onVideoEnd, onDoublePress, onOnePress, isPause, setIsPause]);
+    );
 
 
     return (
+    <>
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.headerLeft}>
@@ -191,7 +287,7 @@ const Post = ({
             />
             <View style={styles.headerText}>
               <Text style={styles.userName}>{userName || name}</Text>
-              {/* <Text style={styles.location}>{places}</Text> */}
+              <Text style={styles.location}>{places}</Text>
             </View>
           </View>
           <View style={styles.headerRight}>
@@ -203,13 +299,13 @@ const Post = ({
             />
           </View>
         </View>
-        <Pressable onPress={handleButtonPress} style={{ flex: 1 }}>
+        <View style={{ flex: 1 }}>
           {renderMedia()}
-        </Pressable>
+        </View>
         <TouchableOpacity onPress={() => setShowBottom(!showBottom)}>
           <View style={styles.caption}>
             <Text style={styles.captionText}>
-              {caption}
+              {caption ? caption : "No Caption"}
             </Text>
           </View>
           <View style={styles.date}>
@@ -223,7 +319,7 @@ const Post = ({
                 <View style={styles.footerIcons}>
                       <IconButton
                         icon="message-outline"
-                        onPress={() => {}}
+                        onPress={handlePresentModalPressComment}
                         style={[styles.cardActionButton, styles.elevation]}
                       />
                     <IconButton
@@ -255,9 +351,11 @@ const Post = ({
                 </View>
             </View>
             <View style={styles.likes}>
-              <Text style={styles.likesText}>
-                {likes} {likes === 1 ? "like" : likes > 1 ? "likes" : ""}
-              </Text>
+              <TouchableOpacity onPress={handlePresentModalPress} style={styles.likesText}>
+                <Text style={styles.likesText}>
+                  {likes?.length > 0 ? likes?.length : null } {likes?.length === 1 ? "like" : likes?.length > 1 ? "likes" : ""}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
          )}
@@ -272,8 +370,24 @@ const Post = ({
               />
             </View>
            )}
-
       </View>
+        <BottomSheet
+        title="Loved by"
+        bottomSheetModalRef={bottomSheetModalRef}
+        users={users}
+        handleSheetChanges={handleSheetChanges}
+        handlePresentModalPress={handlePresentModalPress}
+        fetchUsers={fetchUsers}
+        navigation={navigation}
+      />
+       <BottomSheetComment
+        title="Comments"
+        bottomSheetModalRef={bottomSheetModalRefComment}
+        handleSheetChanges={handleSheetChangesComment}
+        navigation={navigation}
+        postId={post?._id}
+      />
+      </>
     );
   };
   
@@ -426,8 +540,5 @@ const Post = ({
   });
 
    
-  
-
-    
   
   export default Post;

@@ -72,9 +72,10 @@ const commentSchema = new Schema({
     name: String,
     userName: String,
     profilePic: String,
-    type: String,
-    post: { type: Schema.Types.ObjectId, ref: 'Post' },
     comment: String,
+    subComments: [String],
+    likes: [String],
+    postId: String,
     createdAt: { type: Date, default: Date.now},
     updatedAt: String,
 });

@@ -213,6 +213,14 @@ const Profile = ({ navigation }, props) => {
           title={user?.userName ? user?.userName : user?.name}
           titleStyle={{ fontWeight: "bold" }}
         />
+        <Appbar.Action
+          icon="sign-out"
+          onPress={() => {
+            auth.signOut();
+            dispatch(clearData());
+            navigation.navigate("Login");
+          }}
+        />
        
 
 
